@@ -368,6 +368,7 @@ function makeGUI() {
 					state.maxCapacity = getReqCapacity(trainData)[1];
 					d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 					d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
+					d3.select("label[for='dataOverfit'] .value").text(trainData.length);
 					//////////////////
 					parametersChanged = true;
 					reset();
@@ -403,6 +404,7 @@ function makeGUI() {
 			state.maxCapacity = getReqCapacity(trainData)[1];
 			d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 			d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
+			d3.select("label[for='dataOverfit'] .value").text(trainData.length);
 
 			parametersChanged = true;
 			reset();
@@ -482,6 +484,7 @@ function makeGUI() {
 		generateData();
 		d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 		d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
+		d3.select("label[for='dataOverfit'] .value").text(trainData.length);
 		parametersChanged = true;
 		reset();
 	});
@@ -498,6 +501,7 @@ function makeGUI() {
 		generateData();
 		d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 		d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
+		d3.select("label[for='dataOverfit'] .value").text(trainData.length);
 		parametersChanged = true;
 		reset();
 	});
@@ -506,12 +510,14 @@ function makeGUI() {
 	d3.select("label[for='true-noiseSNR'] .value").text(state.noise);
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
+	d3.select("label[for='dataOverfit'] .value").text(trainData.length);
 
 	let batchSize = d3.select("#batchSize").on("input", function () {
 		state.batchSize = this.value;
 		d3.select("label[for='batchSize'] .value").text(this.value);
 		d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 		d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
+		d3.select("label[for='dataOverfit'] .value").text(trainData.length);
 		parametersChanged = true;
 		reset();
 	});
@@ -519,6 +525,7 @@ function makeGUI() {
 	d3.select("label[for='batchSize'] .value").text(state.batchSize);
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
+	d3.select("label[for='dataOverfit'] .value").text(trainData.length);
 
 
 	let activationDropdown = d3.select("#activations").on("change", function () {
@@ -1368,13 +1375,13 @@ function generateData(firstTime = false) {
 		// Split into train and test data.
 		let splitIndex = Math.floor(data.length * state.percTrainData / 100);
 		trainData = data.slice(0, splitIndex);
-
 		testData = data.slice(splitIndex);
 	}
 	state.sugCapacity = getReqCapacity(trainData)[0];
 	state.maxCapacity = getReqCapacity(trainData)[1];
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
+	d3.select("label[for='dataOverfit'] .value").text(trainData.length);
 
 	heatMap.updatePoints(trainData);
 	heatMap.updateTestPoints(state.showTestData ? testData : []);
