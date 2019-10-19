@@ -366,7 +366,7 @@ function makeGUI() {
 					// ~ state.maxCapacity = getReqCapacity(points)[1];
 					state.sugCapacity = getReqCapacity(trainData)[0];
 					state.maxCapacity = getReqCapacity(trainData)[1];
-					d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity + 1000);
+					d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 					d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 					d3.select("label[for='dataOverfit'] .value").text(trainData.length);
 					//////////////////
