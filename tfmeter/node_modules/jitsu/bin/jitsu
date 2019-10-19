@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+
+require('../lib/jitsu/completion');
+
+process.title = 'jitsu';
+
+var jitsu = require('../lib/jitsu');
+
+jitsu.start(function (err) {
+  if (!err) {
+    jitsu.log.info('Nodejitsu'.grey + ' ok'.green.bold);
+  }
+
+  process.exit(err ? 1 : 0);
+});

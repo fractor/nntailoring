@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+
+var Module = require('module').Module,
+    __load = Module._load,
+    packages = {};
+
+//
+// Monkey punch `Module._load()` to observe the names
+// of packages as they are loaded.
+//
+Module._load = function (name, parent) {
+  process.send({type: "load", msg: name});
+  if(name[0] === "." || name[0] === "/"){
+    name = Module._resolveFilename(name, parent)[1];
+  }
+  return __load.apply(Module, arguments);
+};
+
+try {
+  process.nextTick(function () {
+    process.exit(0);
+  });
+
+  __load.call(Module, process.argv[2], null, true);
+}
+catch (ex) {
+  //
+  // Log errors and attempt to log as many packages as we can.
+  //
+  var eStr = '' + (ex
+        ? (ex.stack ? ex.stack : ex)
+        : 'falsey error: ' + ex);
+
+  // 
+  // However, 'cannot find module' errors should be squashed.
+  // In cases with no node_modules present, this is not an indication of failure.
+  // This should perhaps be replaced with a node-detective fallback.
+  // 
+
+  if (!("code" in ex
+    ? ex.code === "MODULE_NOT_FOUND" 
+    : /^Error: Cannot find module '.*'/.test(eStr))
+  ) {
+    process.send({type: "error", msg: eStr});
+  }
+}
