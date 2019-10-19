@@ -5,10 +5,9 @@
             true,
             "check-space"
         ],
-        "max-line-length": [true, 80],
         "indent": [
             true,
-            "spaces"
+            "tabs"
         ],
         "no-duplicate-variable": true,
         "no-eval": true,

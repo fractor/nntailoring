@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-interface Math
-{
-  seedrandom: (seed: string) => void;
+interface Math {
+	seedrandom: (seed: string) => void;
 }
 
 declare let ga: any;

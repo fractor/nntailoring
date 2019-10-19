@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-type DataPoint = 
-{
+type DataPoint = {
 	x: number;
 	y: number[];
 };
@@ -22,8 +21,7 @@ type DataPoint =
  * A multi-series line chart that allows you to append new data points
  * as data becomes available.
  */
-export class AppendingLineChart 
-{
+export class AppendingLineChart {
 	private numLines: number;
 	private data: DataPoint[] = [];
 	private svg: d3.Selection<any>;
@@ -35,8 +33,7 @@ export class AppendingLineChart
 	private minY = Number.MAX_VALUE;
 	private maxY = Number.MIN_VALUE;
 
-	constructor(container: d3.Selection<any>, lineColors: string[]) 
-	{
+	constructor(container: d3.Selection<any>, lineColors: string[]) {
 		this.lineColors = lineColors;
 		this.numLines = lineColors.length;
 		let node = container.node() as HTMLElement;
@@ -61,35 +58,30 @@ export class AppendingLineChart
 			.attr("transform", `translate(${margin.left},${margin.top})`);
 
 		this.paths = new Array(this.numLines);
-		for (let i = 0; i < this.numLines; i++) 
-		{
+		for (let i = 0; i < this.numLines; i++) {
 			this.paths[i] = this.svg.append("path")
 				.attr("class", "line")
 				.style(
-				{
-					"fill": "none",
-					"stroke": lineColors[i],
-					"stroke-width": "1.5px"
-				});
+					{
+						"fill": "none",
+						"stroke": lineColors[i],
+						"stroke-width": "1.5px"
+					});
 		}
 	}
 
-	reset() 
-	{
+	reset() {
 		this.data = [];
 		this.redraw();
 		this.minY = Number.MAX_VALUE;
 		this.maxY = Number.MIN_VALUE;
 	}
 
-	addDataPoint(dataPoint: number[]) 
-	{
-		if (dataPoint.length !== this.numLines) 
-		{
+	addDataPoint(dataPoint: number[]) {
+		if (dataPoint.length !== this.numLines) {
 			throw Error("Length of dataPoint must equal number of lines");
 		}
-		dataPoint.forEach(y => 
-		{
+		dataPoint.forEach(y => {
 			this.minY = Math.min(this.minY, y);
 			this.maxY = Math.max(this.maxY, y);
 		});
@@ -98,20 +90,17 @@ export class AppendingLineChart
 		this.redraw();
 	}
 
-	private redraw() 
-	{
+	private redraw() {
 		// Adjust the x and y domain.
 		this.xScale.domain([1, this.data.length]);
 		this.yScale.domain([this.minY, this.maxY]);
 		// Adjust all the <path> elements (lines).
-		let getPathMap = (lineIndex: number) => 
-		{
+		let getPathMap = (lineIndex: number) => {
 			return d3.svg.line<DataPoint>()
 				.x(d => this.xScale(d.x))
 				.y(d => this.yScale(d.y[lineIndex]));
 		};
-		for (let i = 0; i < this.numLines; i++) 
-		{
+		for (let i = 0; i < this.numLines; i++) {
 			this.paths[i].datum(this.data).attr("d", getPathMap(i));
 		}
 	}
