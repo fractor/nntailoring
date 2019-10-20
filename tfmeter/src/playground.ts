@@ -209,6 +209,7 @@ let lossTrain = 0;
 let lossTest = 0;
 let trueLearningRate = 0;
 let totalCapacity = 0;
+let generalization = 0;
 let player = new Player();
 let lineChart = new AppendingLineChart(d3.select("#linechart"),
 	["#777", "black"]);
@@ -1079,6 +1080,19 @@ function getLoss(network: nn.Node[][], dataPoints: Example2D[]): number {
 	return loss / dataPoints.length * 100;
 }
 
+function getNumberOfCorrectPredictions(network: nn.Node[][], dataPoints: Example2D[]): number {
+	let correctlyClassified = 0;
+	for (let i = 0; i < dataPoints.length; i++) {
+		let dataPoint = dataPoints[i];
+		let input = constructInput(dataPoint.x, dataPoint.y);
+		let output = nn.forwardProp(network, input);
+		let prediction = (output > 0) ? 1 : -1;
+		let correct = (prediction === dataPoint.label) ? 1 : 0;
+		correctlyClassified += correct
+	}
+	return correctlyClassified;
+}
+
 function updateUI(firstStep = false) {
 	// Update the links visually.
 	updateWeightsUI(network, d3.select("g.core"));
@@ -1123,11 +1137,12 @@ function updateUI(firstStep = false) {
 	let bitLossTest = lossTest;
 	let bitLossTrain = lossTrain;
 	let bitTrueLearningRate = signalOf(trueLearningRate) * log2;
+	let bitGeneralization = generalization;
 
 
 	d3.select("#loss-train").text(humanReadable(bitLossTrain));
 	d3.select("#loss-test").text(humanReadable(bitLossTest));
-	d3.select("#trueLearningRate").text(humanReadable(bitTrueLearningRate));
+	d3.select("#generalization").text(humanReadable(bitGeneralization));
 	d3.select("#iter-number").text(addCommas(zeroPad(iter)));
 	d3.select("#total-capacity").text(humanReadableInt(totalCapacity));
 	lineChart.addDataPoint([lossTrain, lossTest]);
@@ -1170,6 +1185,11 @@ function oneStep(): void {
 
 	lossTrain = getLoss(network, trainData);
 	lossTest = getLoss(network, testData);
+
+	let numberOfCorrectTrainPredictions: number = getNumberOfCorrectPredictions(network, trainData);
+	let numberOfCorrectTestPredictions: number = getNumberOfCorrectPredictions(network, testData);
+	generalization = (numberOfCorrectTrainPredictions+ numberOfCorrectTestPredictions)/totalCapacity;
+
 
 	updateUI();
 }
@@ -1214,6 +1234,10 @@ function reset(onStartup = false) {
 	totalCapacity = getTotalCapacity(network);
 	lossTest = getLoss(network, testData);
 	lossTrain = getLoss(network, trainData);
+
+	let numberOfCorrectTrainPredictions: number = getNumberOfCorrectPredictions(network, trainData);
+	let numberOfCorrectTestPredictions: number = getNumberOfCorrectPredictions(network, testData);
+	generalization = (numberOfCorrectTrainPredictions + numberOfCorrectTestPredictions)/totalCapacity;
 
 	drawNetwork(network);
 	updateUI(true);
