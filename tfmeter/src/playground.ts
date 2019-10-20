@@ -210,6 +210,8 @@ let lossTest = 0;
 let trueLearningRate = 0;
 let totalCapacity = 0;
 let generalization = 0;
+let trainClassesAccuracy = [];
+let testClassesAccuracy = [];
 let player = new Player();
 let lineChart = new AppendingLineChart(d3.select("#linechart"),
 	["#777", "black"]);
@@ -1130,17 +1132,16 @@ function getAccuracyForEachClass(network: nn.Node[][], dataPoints: Example2D[]):
 		let input = constructInput(dataPoint.x, dataPoint.y);
 		let output = nn.forwardProp(network, input);
 		let prediction = (output > 0) ? 1 : -1;
-		let correct = (prediction === dataPoint.label) ? 1 : 0;
-		if (dataPoint.label === -1){
-			if (correct){
+		let isCorrect = prediction === dataPoint.label;
+		if (isCorrect){
+			if (dataPoint.label === -1){
 				firstClassCorrect += 1;
 			}
-		else {
-			if (correct){
+			else {
 				secondClassCorrect += 1;
 			}
 		}
-		}
+
 	}
 	let classesCount: number[] = getNumberOfEachClass(network, dataPoints);
 	return [firstClassCorrect/classesCount[0], secondClassCorrect/classesCount[1]];
@@ -1198,6 +1199,10 @@ function updateUI(firstStep = false) {
 	d3.select("#loss-train").text(humanReadable(bitLossTrain));
 	d3.select("#loss-test").text(humanReadable(bitLossTest));
 	d3.select("#generalization").text(humanReadable(bitGeneralization));
+	d3.select("#train-accuracy-first").text(humanReadable(trainClassesAccuracy[0]));
+	d3.select("#train-accuracy-second").text(humanReadable(trainClassesAccuracy[1]));
+	d3.select("#test-accuracy-first").text(humanReadable(testClassesAccuracy[0]));
+	d3.select("#test-accuracy-second").text(humanReadable(testClassesAccuracy[1]));
 	d3.select("#iter-number").text(addCommas(zeroPad(iter)));
 	d3.select("#total-capacity").text(humanReadableInt(totalCapacity));
 	lineChart.addDataPoint([lossTrain, lossTest]);
@@ -1245,16 +1250,14 @@ function oneStep(): void {
 	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
 	generalization = (numberOfCorrectTrainClassifications+ numberOfCorrectTestClassifications)/totalCapacity;
 
-	let trainClassesCount: number[] = getNumberOfEachClass(network, trainData);
-	console.log('train classesCount: ', trainClassesCount);
-	let testClassesCount: number[] = getNumberOfEachClass(network, testData);
-	console.log('test classesCount: ', testClassesCount);
-	let trainClassesAccuracy: number[] = getAccuracyForEachClass(network, trainData);
-	let testClassesAccuracy: number[] = getAccuracyForEachClass(network, testData);
-	console.log(trainClassesAccuracy[0]);
-	console.log(trainClassesAccuracy[1]);
-	//console.log(testClassesAccuracy[0]);
-	//console.log(testClassesAccuracy[1]);
+	//let trainClassesCount: number[] = getNumberOfEachClass(network, trainData);
+	//let testClassesCount: number[] = getNumberOfEachClass(network, testData);
+	//console.log(trainClassesCount);
+	//console.log(testClassesCount);
+	trainClassesAccuracy = getAccuracyForEachClass(network, trainData);
+	testClassesAccuracy = getAccuracyForEachClass(network, testData);
+	console.log(trainClassesAccuracy[0] + " & " + testClassesAccuracy[0]);
+	console.log(trainClassesAccuracy[1] + " & " + testClassesAccuracy[1]);
 
 	updateUI();
 }
@@ -1303,7 +1306,10 @@ function reset(onStartup = false) {
 	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
 	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
 	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications)/totalCapacity;
-
+	
+	trainClassesAccuracy = getAccuracyForEachClass(network, trainData);
+	testClassesAccuracy = getAccuracyForEachClass(network, testData);
+	
 	drawNetwork(network);
 	updateUI(true);
 }
