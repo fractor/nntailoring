@@ -1080,7 +1080,7 @@ function getLoss(network: nn.Node[][], dataPoints: Example2D[]): number {
 	return loss / dataPoints.length * 100;
 }
 
-function getNumberOfCorrectPredictions(network: nn.Node[][], dataPoints: Example2D[]): number {
+function getNumberOfCorrectClassifications(network: nn.Node[][], dataPoints: Example2D[]): number {
 	let correctlyClassified = 0;
 	for (let i = 0; i < dataPoints.length; i++) {
 		let dataPoint = dataPoints[i];
@@ -1186,9 +1186,9 @@ function oneStep(): void {
 	lossTrain = getLoss(network, trainData);
 	lossTest = getLoss(network, testData);
 
-	let numberOfCorrectTrainPredictions: number = getNumberOfCorrectPredictions(network, trainData);
-	let numberOfCorrectTestPredictions: number = getNumberOfCorrectPredictions(network, testData);
-	generalization = (numberOfCorrectTrainPredictions+ numberOfCorrectTestPredictions)/totalCapacity;
+	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
+	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
+	generalization = (numberOfCorrectTrainClassifications+ numberOfCorrectTestClassifications)/totalCapacity;
 
 
 	updateUI();
@@ -1235,9 +1235,9 @@ function reset(onStartup = false) {
 	lossTest = getLoss(network, testData);
 	lossTrain = getLoss(network, trainData);
 
-	let numberOfCorrectTrainPredictions: number = getNumberOfCorrectPredictions(network, trainData);
-	let numberOfCorrectTestPredictions: number = getNumberOfCorrectPredictions(network, testData);
-	generalization = (numberOfCorrectTrainPredictions + numberOfCorrectTestPredictions)/totalCapacity;
+	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
+	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
+	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications)/totalCapacity;
 
 	drawNetwork(network);
 	updateUI(true);
