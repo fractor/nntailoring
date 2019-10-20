@@ -1107,8 +1107,46 @@ function getNumberOfCorrectClassifications(network: nn.Node[][], dataPoints: Exa
 		let correct = (prediction === dataPoint.label) ? 1 : 0;
 		correctlyClassified += correct
 	}
+
 	return correctlyClassified;
 }
+
+function getNumberOfEachClass(network: nn.Node[][], dataPoints: Example2D[]): number[] {
+	let firstClass: number = 0;
+	let secondClass: number = 0;
+	for (let i = 0; i < dataPoints.length; i++) {
+		let dataPoint = dataPoints[i];
+		firstClass += (dataPoint.label === -1) ? 1 : 0;
+		secondClass += (dataPoint.label === 1) ? 1 : 0;
+	}
+	return [firstClass, secondClass];
+}
+
+function getAccuracyForEachClass(network: nn.Node[][], dataPoints: Example2D[]): number[] {
+	let firstClassCorrect: number = 0;
+	let secondClassCorrect: number = 0;
+	for (let i = 0; i < dataPoints.length; i++) {
+		let dataPoint = dataPoints[i];
+		let input = constructInput(dataPoint.x, dataPoint.y);
+		let output = nn.forwardProp(network, input);
+		let prediction = (output > 0) ? 1 : -1;
+		let correct = (prediction === dataPoint.label) ? 1 : 0;
+		if (dataPoint.label === -1){
+			if (correct){
+				firstClassCorrect += 1;
+			}
+		else {
+			if (correct){
+				secondClassCorrect += 1;
+			}
+		}
+		}
+	}
+	let classesCount: number[] = getNumberOfEachClass(network, dataPoints);
+	return [firstClassCorrect/classesCount[0], secondClassCorrect/classesCount[1]];
+}
+
+
 
 function updateUI(firstStep = false) {
 	// Update the links visually.
@@ -1207,6 +1245,16 @@ function oneStep(): void {
 	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
 	generalization = (numberOfCorrectTrainClassifications+ numberOfCorrectTestClassifications)/totalCapacity;
 
+	let trainClassesCount: number[] = getNumberOfEachClass(network, trainData);
+	console.log('train classesCount: ', trainClassesCount);
+	let testClassesCount: number[] = getNumberOfEachClass(network, testData);
+	console.log('test classesCount: ', testClassesCount);
+	let trainClassesAccuracy: number[] = getAccuracyForEachClass(network, trainData);
+	let testClassesAccuracy: number[] = getAccuracyForEachClass(network, testData);
+	console.log(trainClassesAccuracy[0]);
+	console.log(trainClassesAccuracy[1]);
+	//console.log(testClassesAccuracy[0]);
+	//console.log(testClassesAccuracy[1]);
 
 	updateUI();
 }
