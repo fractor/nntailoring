@@ -1256,8 +1256,8 @@ function oneStep(): void {
 	//console.log(testClassesCount);
 	trainClassesAccuracy = getAccuracyForEachClass(network, trainData);
 	testClassesAccuracy = getAccuracyForEachClass(network, testData);
-	console.log(trainClassesAccuracy[0] + " & " + testClassesAccuracy[0]);
-	console.log(trainClassesAccuracy[1] + " & " + testClassesAccuracy[1]);
+	//console.log(trainClassesAccuracy[0] + " & " + testClassesAccuracy[0]);
+	//console.log(trainClassesAccuracy[1] + " & " + testClassesAccuracy[1]);
 
 	updateUI();
 }
