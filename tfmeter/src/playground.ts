@@ -213,8 +213,6 @@ let player = new Player();
 let lineChart = new AppendingLineChart(d3.select("#linechart"),
 	["#777", "black"]);
 
-// ~ let myData: Example2D[] = [];
-
 function getReqCapacity(points: Example2D[]): number[] {
 
 	let rounding = REQ_CAP_ROUNDING;
@@ -278,9 +276,15 @@ function getReqCapacity(points: Example2D[]): number[] {
 	return retval;
 }
 
+// ~ let myData: Example2D[] = [];
+function numberOfUnique(dataset: Example2D[]) {
+	let mappedDataset = dataset.map(point => "" + point.x + point.y + point.label);
+	return mappedDataset.filter(function (n, i, self) {
+		return self.indexOf(n) == i;
+	}).length;
+}
 
 function makeGUI() {
-
 	d3.select("#reset-button").on("click", () => {
 		reset();
 		userHasInteracted();
@@ -368,7 +372,7 @@ function makeGUI() {
 					state.maxCapacity = getReqCapacity(trainData)[1];
 					d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 					d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
-					d3.select("label[for='dataOverfit'] .value").text(trainData.length);
+					d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
 					//////////////////
 					parametersChanged = true;
 					reset();
@@ -404,8 +408,9 @@ function makeGUI() {
 			state.maxCapacity = getReqCapacity(trainData)[1];
 			d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 			d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
-			d3.select("label[for='dataOverfit'] .value").text(trainData.length);
+			d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
 
+			console.log(trainData);
 			parametersChanged = true;
 			reset();
 		}
@@ -484,7 +489,7 @@ function makeGUI() {
 		generateData();
 		d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 		d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
-		d3.select("label[for='dataOverfit'] .value").text(trainData.length);
+		d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
 		parametersChanged = true;
 		reset();
 	});
@@ -501,7 +506,7 @@ function makeGUI() {
 		generateData();
 		d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 		d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
-		d3.select("label[for='dataOverfit'] .value").text(trainData.length);
+		d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
 		parametersChanged = true;
 		reset();
 	});
@@ -510,14 +515,14 @@ function makeGUI() {
 	d3.select("label[for='true-noiseSNR'] .value").text(state.noise);
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
-	d3.select("label[for='dataOverfit'] .value").text(trainData.length);
+	d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
 
 	let batchSize = d3.select("#batchSize").on("input", function () {
 		state.batchSize = this.value;
 		d3.select("label[for='batchSize'] .value").text(this.value);
 		d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 		d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
-		d3.select("label[for='dataOverfit'] .value").text(trainData.length);
+		d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
 		parametersChanged = true;
 		reset();
 	});
@@ -525,7 +530,7 @@ function makeGUI() {
 	d3.select("label[for='batchSize'] .value").text(state.batchSize);
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
-	d3.select("label[for='dataOverfit'] .value").text(trainData.length);
+	d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
 
 
 	let activationDropdown = d3.select("#activations").on("change", function () {
@@ -1381,7 +1386,7 @@ function generateData(firstTime = false) {
 	state.maxCapacity = getReqCapacity(trainData)[1];
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
-	d3.select("label[for='dataOverfit'] .value").text(trainData.length);
+	d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
 
 	heatMap.updatePoints(trainData);
 	heatMap.updateTestPoints(state.showTestData ? testData : []);
