@@ -279,10 +279,16 @@ function getReqCapacity(points: Example2D[]): number[] {
 
 // ~ let myData: Example2D[] = [];
 function numberOfUnique(dataset: Example2D[]) {
-	let mappedDataset = dataset.map(point => "" + point.x + point.y + point.label);
-	return mappedDataset.filter(function (n, i, self) {
-		return self.indexOf(n) == i;
-	}).length;
+	let count: number = 0;
+	let uniqueDict: { [key: string]: number } = {};
+	dataset.forEach(point => {
+		let key: string = "" + point.x + point.y + point.label;
+		if (!(key in uniqueDict)) {
+			count += 1;
+			uniqueDict[key] = 1;
+		}
+	});
+	return count;
 }
 
 function makeGUI() {
@@ -411,7 +417,6 @@ function makeGUI() {
 			d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 			d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
 
-			console.log(trainData);
 			parametersChanged = true;
 			reset();
 		}
