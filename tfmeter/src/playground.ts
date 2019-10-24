@@ -210,6 +210,8 @@ let lossTest = 0;
 let trueLearningRate = 0;
 let totalCapacity = 0;
 let generalization = 0;
+let trainClassesAccuracy = [];
+let testClassesAccuracy = [];
 let player = new Player();
 let lineChart = new AppendingLineChart(d3.select("#linechart"),
 	["#777", "black"]);
@@ -355,9 +357,6 @@ function makeGUI() {
 					let data = target.result;
 					let s = data.split("\n");
 					for (let i = 0; i < s.length; i++) {
-						if (i == 0) {
-							console.log(s[i]);
-						}
 						let ss = s[i].split(",");
 						if (ss.length != 3) break;
 						let x = parseFloat(ss[0]);
@@ -366,14 +365,10 @@ function makeGUI() {
 						points.push({x, y, label});
 					}
 					shuffle(points);
-					console.log(points.length);
 					// Split into train and test data.
 					let splitIndex = Math.floor(points.length * state.percTrainData / 100);
 					trainData = points.slice(0, splitIndex);
 					testData = points.slice(splitIndex);
-
-					console.table(trainData);
-					console.table(testData);
 
 					heatMap.updatePoints(trainData);
 					heatMap.updateTestPoints(state.showTestData ? testData : []);
@@ -1119,8 +1114,45 @@ function getNumberOfCorrectClassifications(network: nn.Node[][], dataPoints: Exa
 		let correct = (prediction === dataPoint.label) ? 1 : 0;
 		correctlyClassified += correct;
 	}
+
 	return correctlyClassified;
 }
+
+function getNumberOfEachClass(dataPoints: Example2D[]): number[] {
+	let firstClass: number = 0;
+	let secondClass: number = 0;
+	for (let i = 0; i < dataPoints.length; i++) {
+		let dataPoint = dataPoints[i];
+		firstClass += (dataPoint.label === -1) ? 1 : 0;
+		secondClass += (dataPoint.label === 1) ? 1 : 0;
+	}
+	return [firstClass, secondClass];
+}
+
+function getAccuracyForEachClass(network: nn.Node[][], dataPoints: Example2D[]): number[] {
+	let firstClassCorrect: number = 0;
+	let secondClassCorrect: number = 0;
+	for (let i = 0; i < dataPoints.length; i++) {
+		let dataPoint = dataPoints[i];
+		let input = constructInput(dataPoint.x, dataPoint.y);
+		let output = nn.forwardProp(network, input);
+		let prediction = (output > 0) ? 1 : -1;
+		let isCorrect = prediction === dataPoint.label;
+		if (isCorrect){
+			if (dataPoint.label === -1){
+				firstClassCorrect += 1;
+			}
+			else {
+				secondClassCorrect += 1;
+			}
+		}
+
+	}
+	let classesCount: number[] = getNumberOfEachClass(dataPoints);
+	return [firstClassCorrect/classesCount[0], secondClassCorrect/classesCount[1]];
+}
+
+
 
 function updateUI(firstStep = false) {
 	// Update the links visually.
@@ -1172,6 +1204,10 @@ function updateUI(firstStep = false) {
 	d3.select("#loss-train").text(humanReadable(bitLossTrain));
 	d3.select("#loss-test").text(humanReadable(bitLossTest));
 	d3.select("#generalization").text(humanReadable(bitGeneralization));
+	d3.select("#train-accuracy-first").text(humanReadable(trainClassesAccuracy[0]));
+	d3.select("#train-accuracy-second").text(humanReadable(trainClassesAccuracy[1]));
+	d3.select("#test-accuracy-first").text(humanReadable(testClassesAccuracy[0]));
+	d3.select("#test-accuracy-second").text(humanReadable(testClassesAccuracy[1]));
 	d3.select("#iter-number").text(addCommas(zeroPad(iter)));
 	d3.select("#total-capacity").text(humanReadableInt(totalCapacity));
 	lineChart.addDataPoint([lossTrain, lossTest]);
@@ -1218,6 +1254,9 @@ function oneStep(): void {
 	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
 	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
 	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications) / totalCapacity;
+
+	trainClassesAccuracy = getAccuracyForEachClass(network, trainData);
+	testClassesAccuracy = getAccuracyForEachClass(network, testData);
 
 
 	updateUI();
@@ -1266,7 +1305,11 @@ function reset(onStartup = false) {
 
 	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
 	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
-	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications) / totalCapacity;
+
+	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications)/totalCapacity;
+
+	trainClassesAccuracy = getAccuracyForEachClass(network, trainData);
+	testClassesAccuracy = getAccuracyForEachClass(network, testData);
 
 	drawNetwork(network);
 	updateUI(true);
