@@ -355,26 +355,29 @@ function makeGUI() {
 					let data = target.result;
 					let s = data.split("\n");
 					for (let i = 0; i < s.length; i++) {
+						if (i == 0) {
+							console.log(s[i]);
+						}
 						let ss = s[i].split(",");
 						if (ss.length != 3) break;
-						let x = ss[0];
-						let y = ss[1];
-						let label = ss[2];
+						let x = parseFloat(ss[0]);
+						let y = parseFloat(ss[1]);
+						let label = parseInt(ss[2]);
 						points.push({x, y, label});
-						// ~ console.log(points[i].x+","+points[i].y+","+points[i].label);
 					}
 					shuffle(points);
+					console.log(points.length);
 					// Split into train and test data.
 					let splitIndex = Math.floor(points.length * state.percTrainData / 100);
 					trainData = points.slice(0, splitIndex);
 					testData = points.slice(splitIndex);
 
+					console.table(trainData);
+					console.table(testData);
+
 					heatMap.updatePoints(trainData);
 					heatMap.updateTestPoints(state.showTestData ? testData : []);
 
-
-					// ~ state.sugCapacity = getReqCapacity(points)[0];
-					// ~ state.maxCapacity = getReqCapacity(points)[1];
 					state.sugCapacity = getReqCapacity(trainData)[0];
 					state.maxCapacity = getReqCapacity(trainData)[1];
 					d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
@@ -383,6 +386,11 @@ function makeGUI() {
 					//////////////////
 					parametersChanged = true;
 					reset();
+
+					// Drawing thumbnail
+					let canvas: any = document.querySelector(`canvas[data-dataset=byod]`);
+					renderThumbnail(canvas, (numSamples: number, noise: number) => points);
+
 
 				};
 
@@ -418,6 +426,10 @@ function makeGUI() {
 			d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
 
 			parametersChanged = true;
+
+			// Resetting the BYOD thumbnail
+			let canvas: any = document.querySelector(`canvas[data-dataset=byod]`);
+			renderBYODThumbnail(canvas);
 			reset();
 		}
 
@@ -1105,7 +1117,7 @@ function getNumberOfCorrectClassifications(network: nn.Node[][], dataPoints: Exa
 		let output = nn.forwardProp(network, input);
 		let prediction = (output > 0) ? 1 : -1;
 		let correct = (prediction === dataPoint.label) ? 1 : 0;
-		correctlyClassified += correct
+		correctlyClassified += correct;
 	}
 	return correctlyClassified;
 }
@@ -1205,7 +1217,7 @@ function oneStep(): void {
 
 	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
 	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
-	generalization = (numberOfCorrectTrainClassifications+ numberOfCorrectTestClassifications)/totalCapacity;
+	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications) / totalCapacity;
 
 
 	updateUI();
@@ -1254,7 +1266,7 @@ function reset(onStartup = false) {
 
 	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
 	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
-	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications)/totalCapacity;
+	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications) / totalCapacity;
 
 	drawNetwork(network);
 	updateUI(true);
@@ -1288,32 +1300,46 @@ function initTutorial() {
 	});
 }
 
+function renderThumbnail(canvas, dataGenerator) {
+	let w = 100;
+	let h = 100;
+	canvas.setAttribute("width", w);
+	canvas.setAttribute("height", h);
+	let context = canvas.getContext("2d");
+	let data = dataGenerator(200, 50); // NPOINTS, NOISE
+
+	data.forEach(
+		function (d) {
+			context.fillStyle = colorScale(d.label);
+			context.fillRect(w * (d.x + 6) / 12, h * (-d.y + 6) / 12, 4, 4);
+		});
+	d3.select(canvas.parentNode).style("display", null);
+}
+
+function renderBYODThumbnail(canvas) {
+	const img = new Image();
+	img.src = "https://i.imgur.com/6uRzJMT.png";
+	canvas.setAttribute("width", 100);
+	canvas.setAttribute("height", 100);
+	let context = canvas.getContext("2d");
+	img.onload = function (e) {
+		context.drawImage(img, 25, 25, 50, 50);
+	};
+	d3.select(canvas.parentNode).style("display", null);
+}
+
 function drawDatasetThumbnails() {
-	function renderThumbnail(canvas, dataGenerator) {
-		let w = 100;
-		let h = 100;
-		canvas.setAttribute("width", w);
-		canvas.setAttribute("height", h);
-		let context = canvas.getContext("2d");
-		let data = dataGenerator(200, 50); // NPOINTS, NOISE
-
-		data.forEach(
-			function (d) {
-				context.fillStyle = colorScale(d.label);
-				// ~ context.fillRect(w * (d.x + 6) / 12, h * (-d.y + 6) / 12, 4, 4);
-				context.fillRect(w * (d.x + 6) / 12, h * (-d.y + 6) / 12, 4, 4);
-			});
-		d3.select(canvas.parentNode).style("display", null);
-	}
-
 	d3.selectAll(".dataset").style("display", "none");
 
 	if (state.problem === Problem.CLASSIFICATION) {
 		for (let dataset in datasets) {
-			let canvas: any =
-				document.querySelector(`canvas[data-dataset=${dataset}]`);
+			let canvas: any = document.querySelector(`canvas[data-dataset=${dataset}]`);
 			let dataGenerator = datasets[dataset];
 
+			if (dataset === "byod") {
+				renderBYODThumbnail(canvas);
+				continue;
+			}
 			renderThumbnail(canvas, dataGenerator);
 
 
@@ -1385,32 +1411,20 @@ function generateData(firstTime = false) {
 	let data: Example2D[] = [];
 
 	if (state.byod) {
-		// ~ for (let i = 0; i < trainData.length; i++)
-		// ~ {
-		// ~ data[i].push(trainData[i]);
-		// ~ }
-		// ~ for (let i = trainData.length; i < trainData.length+testData.length; i++)
-		// ~ {
-		// ~ let j = i - trainData.length;
-		// ~ data[i].push(testData[j]);
-		// ~ }
-
-		// ~ shuffle(data);
-		// ~ let splitIndex = Math.floor(data.length * state.percTrainData/100);
-		// ~ trainData = data.slice(0, splitIndex);
-		// ~ testData = data.slice(splitIndex);
+		data = trainData.concat(testData);
 	}
 
 	if (!state.byod) {
 		generator = state.problem === Problem.CLASSIFICATION ? state.dataset : state.regDataset;
 		data = generator(numSamples, state.noise);
-
-		shuffle(data);
-		// Split into train and test data.
-		let splitIndex = Math.floor(data.length * state.percTrainData / 100);
-		trainData = data.slice(0, splitIndex);
-		testData = data.slice(splitIndex);
 	}
+
+	// Shuffle and split into train and test data.
+	shuffle(data);
+	let splitIndex = Math.floor(data.length * state.percTrainData / 100);
+	trainData = data.slice(0, splitIndex);
+	testData = data.slice(splitIndex);
+
 	state.sugCapacity = getReqCapacity(trainData)[0];
 	state.maxCapacity = getReqCapacity(trainData)[1];
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
