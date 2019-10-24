@@ -223,9 +223,8 @@ limitations under the License.
 
         <span>Bias Indicator</span></br>
         <label for="dataDistribution">
-            Distribution: <span class="value">XX</span>
-        </label></br>
-        </br>
+            Distribution: <br/><span class="value">XX</span>
+        </label>
 
         <div class="ui-dataset">
             <div id="cinputFormBYOD">
@@ -382,7 +381,7 @@ limitations under the License.
 
         </div>
         <div id="heatmap"></div>
-        <div style="float:left;margin-top:20px">
+        <div style="float:left;margin-top:20px;margin-bottom:20px">
             <div style="display:flex; align-items:center;">
 
                 <!-- Gradient color scale -->
@@ -414,17 +413,17 @@ limitations under the License.
                 </label>
             </div>
         </div>
-        <div>
-            ACCURACY FOR EACH CLASS
-            <div class="output-stats train">
-                <span>Train: </span>
-                <div class="value" id="train-accuracy-first"></div>,
-                <div class="value" id="train-accuracy-second"></div>
-            </div>
+        <div class="metrics">
+            <span>Accuracy for each class</span>
             <div class="output-stats test">
                 <span>Test: </span>
                 <div class="value" id="test-accuracy-first"></div>,
                 <div class="value" id="test-accuracy-second"></div>
+            </div>
+            <div class="output-stats test">
+                <span>Train: </span>
+                <div class="value" id="train-accuracy-first"></div>,
+                <div class="value" id="train-accuracy-second"></div>
             </div>
         </div>
 

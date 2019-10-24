@@ -363,6 +363,7 @@ function makeGUI() {
 						let y = parseFloat(ss[1]);
 						let label = parseInt(ss[2]);
 						points.push({x, y, label});
+						// ~ console.log(points[i].x+","+points[i].y+","+points[i].label);
 					}
 					shuffle(points);
 					// Split into train and test data.
@@ -373,11 +374,15 @@ function makeGUI() {
 					heatMap.updatePoints(trainData);
 					heatMap.updateTestPoints(state.showTestData ? testData : []);
 
+					let classDist = getNumberOfEachClass(trainData).map((num) => num / trainData.length);
 					state.sugCapacity = getReqCapacity(trainData)[0];
 					state.maxCapacity = getReqCapacity(trainData)[1];
+
 					d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 					d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 					d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
+					d3.select("label[for='dataDistribution'] .value")
+						.text(`${classDist[0].toFixed(3)}, ${classDist[1].toFixed(3)}`);
 					//////////////////
 					parametersChanged = true;
 					reset();
@@ -412,13 +417,16 @@ function makeGUI() {
 			for (let i = 0; i < testData.length; i++) {
 				points.push(testData[i]);
 			}
-			// ~ state.sugCapacity = getReqCapacity(points)[0];
-			// ~ state.maxCapacity = getReqCapacity(points)[1];
+
+			let classDist = getNumberOfEachClass(trainData).map((num) => num / trainData.length);
 			state.sugCapacity = getReqCapacity(trainData)[0];
 			state.maxCapacity = getReqCapacity(trainData)[1];
+
 			d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 			d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 			d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
+			d3.select("label[for='dataDistribution'] .value")
+				.text(`${classDist[0].toFixed(3)}, ${classDist[1].toFixed(3)}`);
 
 			parametersChanged = true;
 
@@ -500,9 +508,13 @@ function makeGUI() {
 		state.percTrainData = this.value;
 		d3.select("label[for='percTrainData'] .value").text(this.value);
 		generateData();
+
+		let classDist = getNumberOfEachClass(trainData).map((num) => num / trainData.length);
 		d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 		d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 		d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
+		d3.select("label[for='dataDistribution'] .value")
+			.text(`${classDist[0].toFixed(3)}, ${classDist[1].toFixed(3)}`);
 		parametersChanged = true;
 		reset();
 	});
@@ -517,33 +529,50 @@ function makeGUI() {
 		state.noise = this.value;
 		d3.select("label[for='true-noiseSNR'] .value").text(this.value);
 		generateData();
+
+		let classDist = getNumberOfEachClass(trainData).map((num) => num / trainData.length);
 		d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 		d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 		d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
+		d3.select("label[for='dataDistribution'] .value")
+			.text(`${classDist[0].toFixed(3)}, ${classDist[1].toFixed(3)}`);
+
 		parametersChanged = true;
 		reset();
 	});
 
+
 	noise.property("value", state.noise);
+	let classDist = getNumberOfEachClass(trainData).map((num) => num / trainData.length);
 	d3.select("label[for='true-noiseSNR'] .value").text(state.noise);
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 	d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
+	d3.select("label[for='dataDistribution'] .value")
+		.text(`${classDist[0].toFixed(3)}, ${classDist[1].toFixed(3)}`);
 
 	let batchSize = d3.select("#batchSize").on("input", function () {
 		state.batchSize = this.value;
+
+		let classDist = getNumberOfEachClass(trainData).map((num) => num / trainData.length);
 		d3.select("label[for='batchSize'] .value").text(this.value);
 		d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 		d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 		d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
+		d3.select("label[for='dataDistribution'] .value")
+			.text(`${classDist[0].toFixed(3)}, ${classDist[1].toFixed(3)}`);
+
 		parametersChanged = true;
 		reset();
 	});
+
 	batchSize.property("value", state.batchSize);
 	d3.select("label[for='batchSize'] .value").text(state.batchSize);
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 	d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
+	d3.select("label[for='dataDistribution'] .value")
+		.text(`${classDist[0].toFixed(3)}, ${classDist[1].toFixed(3)}`);
 
 
 	let activationDropdown = d3.select("#activations").on("change", function () {
@@ -1138,20 +1167,18 @@ function getAccuracyForEachClass(network: nn.Node[][], dataPoints: Example2D[]):
 		let output = nn.forwardProp(network, input);
 		let prediction = (output > 0) ? 1 : -1;
 		let isCorrect = prediction === dataPoint.label;
-		if (isCorrect){
-			if (dataPoint.label === -1){
+		if (isCorrect) {
+			if (dataPoint.label === -1) {
 				firstClassCorrect += 1;
-			}
-			else {
+			} else {
 				secondClassCorrect += 1;
 			}
 		}
 
 	}
 	let classesCount: number[] = getNumberOfEachClass(dataPoints);
-	return [firstClassCorrect/classesCount[0], secondClassCorrect/classesCount[1]];
+	return [firstClassCorrect / classesCount[0], secondClassCorrect / classesCount[1]];
 }
-
 
 
 function updateUI(firstStep = false) {
@@ -1306,7 +1333,7 @@ function reset(onStartup = false) {
 	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
 	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
 
-	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications)/totalCapacity;
+	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications) / totalCapacity;
 
 	trainClassesAccuracy = getAccuracyForEachClass(network, trainData);
 	testClassesAccuracy = getAccuracyForEachClass(network, testData);
@@ -1360,13 +1387,20 @@ function renderThumbnail(canvas, dataGenerator) {
 }
 
 function renderBYODThumbnail(canvas) {
-	const img = new Image();
-	img.src = "https://i.imgur.com/6uRzJMT.png";
 	canvas.setAttribute("width", 100);
 	canvas.setAttribute("height", 100);
 	let context = canvas.getContext("2d");
+	const plusSvg = "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><title>add</title><path d=\"M18.984 12.984h-6v6h-1.969v-6h-6v-1.969h6v-6h1.969v6h6v1.969z\"></path></svg>";
+
+	const img = new Image();
+	const svg = new Blob([plusSvg], {type: "image/svg+xml"});
+	const url = URL.createObjectURL(svg);
+
+	img.src = url;
+
 	img.onload = function (e) {
 		context.drawImage(img, 25, 25, 50, 50);
+		URL.revokeObjectURL(url);
 	};
 	d3.select(canvas.parentNode).style("display", null);
 }
@@ -1468,11 +1502,15 @@ function generateData(firstTime = false) {
 	trainData = data.slice(0, splitIndex);
 	testData = data.slice(splitIndex);
 
+	let classDist = getNumberOfEachClass(trainData).map((num) => num / trainData.length);
 	state.sugCapacity = getReqCapacity(trainData)[0];
 	state.maxCapacity = getReqCapacity(trainData)[1];
+
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 	d3.select("label[for='dataOverfit'] .value").text(numberOfUnique(trainData));
+	d3.select("label[for='dataDistribution'] .value")
+		.text(`${classDist[0].toFixed(3)}, ${classDist[1].toFixed(3)}`);
 
 	heatMap.updatePoints(trainData);
 	heatMap.updateTestPoints(state.showTestData ? testData : []);
