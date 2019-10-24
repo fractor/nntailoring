@@ -1113,7 +1113,7 @@ function getNumberOfCorrectClassifications(network: nn.Node[][], dataPoints: Exa
 	return correctlyClassified;
 }
 
-function getNumberOfEachClass(network: nn.Node[][], dataPoints: Example2D[]): number[] {
+function getNumberOfEachClass(dataPoints: Example2D[]): number[] {
 	let firstClass: number = 0;
 	let secondClass: number = 0;
 	for (let i = 0; i < dataPoints.length; i++) {
@@ -1143,7 +1143,7 @@ function getAccuracyForEachClass(network: nn.Node[][], dataPoints: Example2D[]):
 		}
 
 	}
-	let classesCount: number[] = getNumberOfEachClass(network, dataPoints);
+	let classesCount: number[] = getNumberOfEachClass(dataPoints);
 	return [firstClassCorrect/classesCount[0], secondClassCorrect/classesCount[1]];
 }
 
