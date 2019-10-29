@@ -1234,7 +1234,7 @@ function updateUI(firstStep = false) {
 	let bitLossTest = lossTest;
 	let bitLossTrain = lossTrain;
 	let bitTrueLearningRate = signalOf(trueLearningRate) * log2;
-	let bitGeneralization = generalization
+	let bitGeneralization = generalization;
 
 
 	d3.select("#loss-train").text(humanReadable(bitLossTrain));
@@ -1495,6 +1495,7 @@ function generateData(firstTime = false) {
 
 	let generator;
 	let data: Example2D[] = [];
+	// tslint:disable-next-line:indent
 
 	if (state.byod) {
 		data = trainData.concat(testData);
