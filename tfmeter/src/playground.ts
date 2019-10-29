@@ -294,6 +294,15 @@ function numberOfUnique(dataset: Example2D[]) {
 }
 
 function makeGUI() {
+
+	// Toolboxes
+	$(function () {
+		$("[data-toggle='popover']").popover();
+	});
+	$(".popover-dismiss").popover({
+		trigger: "focus"
+	});
+
 	d3.select("#reset-button").on("click", () => {
 		reset();
 		userHasInteracted();
@@ -1207,8 +1216,8 @@ function updateUI(firstStep = false) {
 		return s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 	}
 
-	function humanReadable(n: number): string {
-		return n.toFixed(4);
+	function humanReadable(n: number, k = 4): string {
+		return n.toFixed(k);
 	}
 
 	function humanReadableInt(n: number): string {
@@ -1225,12 +1234,12 @@ function updateUI(firstStep = false) {
 	let bitLossTest = lossTest;
 	let bitLossTrain = lossTrain;
 	let bitTrueLearningRate = signalOf(trueLearningRate) * log2;
-	let bitGeneralization = generalization;
+	let bitGeneralization = generalization
 
 
 	d3.select("#loss-train").text(humanReadable(bitLossTrain));
 	d3.select("#loss-test").text(humanReadable(bitLossTest));
-	d3.select("#generalization").text(humanReadable(bitGeneralization));
+	d3.select("#generalization").text(humanReadable(bitGeneralization, 3));
 	d3.select("#train-accuracy-first").text(humanReadable(trainClassesAccuracy[0]));
 	d3.select("#train-accuracy-second").text(humanReadable(trainClassesAccuracy[1]));
 	d3.select("#test-accuracy-first").text(humanReadable(testClassesAccuracy[0]));
@@ -1564,6 +1573,12 @@ function simulateClick(elem /* Must be the element, not d3 selection */) {
 		null); /* relatedTarget */
 	elem.dispatchEvent(evt);
 }
+
+
+
+
+
+
 
 drawDatasetThumbnails();
 // initTutorial();

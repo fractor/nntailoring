@@ -41,9 +41,9 @@ h2 {
     font-size: 18px;
 }
 
-h3 {
-    margin: 10px 0;
-}
+    h3 {
+        margin: 10px 0;
+    }
 
 p a {
     color: #0D658C;
@@ -1005,4 +1005,49 @@ footer .links a:hover {
 /* Keep grey focus circle for non-start values */
 #main-part .mdl-slider.is-upgraded:focus:not(:active)::-webkit-slider-thumb {
     box-shadow: 0 0 0 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Toolboxes */
+span.title {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+h3.popover-header {
+    margin: 0px 0;
+    background-color: #f1f1f1 !important;
+}
+
+a.info {
+    vertical-align: bottom;
+    position:absolute; /* Anything but static */
+    width: 1.2em;
+    height: 1.2em;
+    text-indent: -9999em;
+    display: inline-block;
+    color: white;
+    font-weight:normal;
+    font-size:0.9em;
+    line-height:1em;
+    background-color: #c6c6c6;
+    margin-left: .25em;
+    margin-top: 0.2em;
+    -webkit-border-radius:.75em;
+    -moz-border-radius:.75em;
+    border-radius:.7em;
+}
+a.info:hover {
+    background-color: #a5a5a5;
+    cursor: pointer;
+}
+a.info:before {
+    content:"?";
+    position: absolute;
+    top: .2em;
+    color: white;
+    left:0;
+    text-indent: 0;
+    display:block;
+    width:1.15em;
+    text-align:center;
 }

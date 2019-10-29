@@ -57,6 +57,7 @@ limitations under the License.
     <!-- End Google Tag Manager -->
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="utf-8">
@@ -88,6 +89,11 @@ limitations under the License.
 
 </head>
 <body>
+
+<!-- Popups -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
 <!-- Google Tag Manager (noscript) -->
 <noscript>
     <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KDXRHMR"
@@ -209,7 +215,21 @@ limitations under the License.
         <h4>
             <span>Data</span>
         </h4>
-        <span>Capacity Demand</span></br>
+        <span>Capacity Demand</span>
+        <a class="pop info"
+           tabindex="0"
+           data-placement="auto"
+           data-html="true"
+           data-trigger="focus"
+           data-toggle="popover"
+           data-title="Capacity Demand"
+           data-content="<div>
+                            <b>Expected</b> - Explanation <br/>
+                            <b>Maximum</b> - Explanation <br/>
+                            <b>Overfit</b> - Explanation
+                        </div>">
+        </a>
+        </br>
         <label for="sugCapacity">
             Expected: <b><span class="value">XX</span>&nbsp;bits</b>
         </label></br>
@@ -221,7 +241,17 @@ limitations under the License.
         </label>
         </br></br>
 
-        <span>Bias Indicator</span></br>
+        <span>Bias Indicator</span>
+        <a class="info"
+           tabindex="0"
+           data-placement="auto"
+           data-html="true"
+           data-toggle="popover"
+           data-trigger="focus"
+           data-title="Bias Indicator"
+           data-content="<div><b>Distribution</b> - Describes the class distribution on training set</div>">
+        </a>
+        </br>
         <label for="dataDistribution">
             Distribution: <br/><span class="value">XX</span>
         </label>
@@ -353,7 +383,18 @@ limitations under the License.
         <h4 class="network-capacity">
             <span>Memory Equivalent Capacity:&nbsp;</span>
             <div class="value" id="total-capacity"></div>
-            <span>&nbsp;bits</span>
+            <span>
+                &nbsp;bits&nbsp;
+                <a class="info"
+                    tabindex="0"
+                    data-placement="auto"
+                    data-html="true"
+                    data-toggle="popover"
+                    data-trigger="focus"
+                    data-title="Memory Equivalent Capacity"
+                    data-content="<div>Explanation</div>">
+                </a>
+            </span>
         </h4>
     </div>
 
@@ -375,6 +416,15 @@ limitations under the License.
                 <span>Generalization: </span>
                 <div class="value" id="generalization"></div>
                 bit/bit
+                <a class="info"
+                   tabindex="0"
+                   data-placement="auto"
+                   data-html="true"
+                   data-toggle="popover"
+                   data-trigger="focus"
+                   data-title="Generalization"
+                   data-content="<div>Explanation</div>">
+                </a>
             </div>
             <br>
             <div id="linechart"></div>
@@ -415,6 +465,15 @@ limitations under the License.
         </div>
         <div class="metrics">
             <span>Accuracy for each class</span>
+            <a class="info"
+               tabindex="0"
+               data-placement="auto"
+               data-html="true"
+               data-toggle="popover"
+               data-trigger="focus"
+               data-title="Accuracy for each class"
+               data-content="<div>Explanation</div>">
+            </a>
             <div class="output-stats test">
                 <span>Test: </span>
                 <div class="value" id="test-accuracy-first"></div>,
@@ -431,6 +490,7 @@ limitations under the License.
     </div>
 
 </div>
+<div class="l--page">
 <h2>Need a tutorial video?</h2>
 <p>Click <a href="https://www.youtube.com/watch?v=Q-H5GN6r-hQ" target="dio"> here </a> for a Youtube tutorial video.</p>
 <h2>Bring Your Own Data</h2>
@@ -450,6 +510,7 @@ limitations under the License.
     <a href="https://research.google.com/bigpicture/">Big Picture</a> and <a
         href="https://research.google.com/teams/brain/">Google Brain</a> teams for feedback and guidance.
 </p>
+</div>
 </div>
 
 
@@ -486,7 +547,7 @@ limitations under the License.
         </svg>
         </a>
         <div class="links">
-            <a href="https://github.com/tensorflow/playground">Source on GitHub</a>
+            <a href="https://github.com/fractor/nntailoring/tree/master/tfmeter">Source on GitHub</a>
         </div>
     </div>
 </footer>
