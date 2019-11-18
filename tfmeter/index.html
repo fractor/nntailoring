@@ -58,6 +58,8 @@ limitations under the License.
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="utf-8">
@@ -224,9 +226,9 @@ limitations under the License.
            data-toggle="popover"
            data-title="Capacity Demand"
            data-content="<div>
-                            <b>Expected</b> - Explanation <br/>
-                            <b>Maximum</b> - Explanation <br/>
-                            <b>Overfit</b> - Explanation
+                            <b>Expected:</b> </br> Expected capacity needed, based on algorithm 'MaxCapReq.'  <br/>
+                            </br><b>Maximum:</b></br> Capacity needed to memorize training data using 'dumb' network where only biases are fitted (all weights are constant). <br/>
+                            </br><b>Overfit:</b></br> Capacity needed to memorize training data as a lookup table (the number of state transitions a lookup table would need).
                         </div>">
         </a>
         </br>
@@ -249,7 +251,7 @@ limitations under the License.
            data-toggle="popover"
            data-trigger="focus"
            data-title="Bias Indicator"
-           data-content="<div><b>Distribution</b> - Describes the class distribution on training set</div>">
+           data-content="<div><b>Distribution:</b></br> Shows the distribution of classes in the training data in order to indicate any bias.</div>">
         </a>
         </br>
         <label for="dataDistribution">
@@ -392,7 +394,15 @@ limitations under the License.
                     data-toggle="popover"
                     data-trigger="focus"
                     data-title="Memory Equivalent Capacity"
-                    data-content="<div>Explanation</div>">
+                    data-content="<div>The machine learners intellectual capacity is memory-equivalent to N bits when the machine learner can represent 2N binary labeling functions of N uniformly random inputs.</br>
+                    <ol>
+                    <li> The output of a single neuron is maximally one bit</li>
+                    <li> The memory capacity of a single neuron is the number of parameters in bits</li>
+                    <li> The memory capacity of neurons in a single layer is additive</li>
+                    <li> The memory capacity of neurons in a subsequent layer is limited by the output of the layer it depends on</li>
+                    </ol>
+
+                    </div>">
                 </a>
             </span>
         </h4>
@@ -423,8 +433,13 @@ limitations under the License.
                    data-toggle="popover"
                    data-trigger="focus"
                    data-title="Generalization"
-                   data-content="<div>Explanation</div>">
+                   data-content="<div>
+                                The model’s ability to handle instances from different classes by a common property. </br>
+                                *Insert formula here*
+                                </div>"
+                >
                 </a>
+
             </div>
             <br>
             <div id="linechart"></div>
@@ -472,7 +487,10 @@ limitations under the License.
                data-toggle="popover"
                data-trigger="focus"
                data-title="Accuracy for each class"
-               data-content="<div>Explanation</div>">
+               data-content="<div>
+               The proportion of correct classified labels within each class, for both training and test data.
+                </br>Displayed in the format: class=-1 , class=1
+               </div>">
             </a>
             <div class="output-stats test">
                 <span>Test: </span>
