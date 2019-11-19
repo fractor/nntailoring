@@ -229,6 +229,19 @@ limitations under the License.
                             <b>Expected:</b> </br> Expected capacity needed, based on algorithm 'MaxCapReq.'  <br/>
                             </br><b>Maximum:</b></br> Capacity needed to memorize training data using 'dumb' network where only biases are fitted (all weights are constant). <br/>
                             </br><b>Overfit:</b></br> Capacity needed to memorize training data as a lookup table (the number of state transitions a lookup table would need).
+
+                            <br/>
+                            <code>
+                            MaxCapReq(data, labels) <br/>
+                            thresholds ⟵ 0 <br/>
+                            <b>loop over</b> <i>i</i>: table[i] ⟵ (∑ x[i][d], label[i]) <br/>
+                            sortedtable ⟵ sort(table, key = column 0) <br/>
+                            class ⟵ 0 <br/>
+                            <b>loop over</b> <i>i</i>: <b>if</b> not sortedtable[i][1] == class <b>then</b> <br/>
+                            .
+                            .
+                            .
+                            </code>
                         </div>">
         </a>
         </br>
@@ -395,6 +408,7 @@ limitations under the License.
                     data-trigger="focus"
                     data-title="Memory Equivalent Capacity"
                     data-content="<div>The machine learners intellectual capacity is memory-equivalent to N bits when the machine learner can represent 2N binary labeling functions of N uniformly random inputs.</br>
+
                     <ol>
                     <li> The output of a single neuron is maximally one bit</li>
                     <li> The memory capacity of a single neuron is the number of parameters in bits</li>
@@ -434,8 +448,9 @@ limitations under the License.
                    data-trigger="focus"
                    data-title="Generalization"
                    data-content="<div>
-                                The model’s ability to handle instances from different classes by a common property. </br>
-                                *Insert formula here*
+                                The model’s ability to handle instances from different classes by a common property. </br></br>
+
+                                <i>*Insert formula here*</i>
                                 </div>"
                 >
                 </a>
@@ -489,7 +504,8 @@ limitations under the License.
                data-title="Accuracy for each class"
                data-content="<div>
                The proportion of correct classified labels within each class, for both training and test data.
-                </br>Displayed in the format: class=-1 , class=1
+                </br></br>
+                Displayed in the format: <i>class=-1 , class=1</i>
                </div>">
             </a>
             <div class="output-stats test">
