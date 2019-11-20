@@ -55,7 +55,7 @@ h2 {
     }
 
 p a {
-    color: #0D658C;
+    color: #0D658C !important;
 }
 
 /* Layout */
@@ -1059,4 +1059,8 @@ a.info:before {
     display:block;
     width:1.15em;
     text-align:center;
+}
+
+.popover{
+    max-width: 30%; /* Max Width of the popover (depending on the container!) */
 }

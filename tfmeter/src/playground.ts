@@ -294,10 +294,11 @@ function numberOfUnique(dataset: Example2D[]) {
 }
 
 function makeGUI() {
-
 	// Toolboxes
 	$(function () {
-		$("[data-toggle='popover']").popover();
+		$("[data-toggle='popover']").popover({
+			container: "body"
+		});
 	});
 	$(".popover-dismiss").popover({
 		trigger: "focus"

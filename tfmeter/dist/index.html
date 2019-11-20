@@ -57,9 +57,8 @@ limitations under the License.
     <!-- End Google Tag Manager -->
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="utf-8">
@@ -93,8 +92,12 @@ limitations under the License.
 <body>
 
 <!-- Popups -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
 
 <!-- Google Tag Manager (noscript) -->
 <noscript>
@@ -219,30 +222,41 @@ limitations under the License.
         </h4>
         <span>Capacity Demand</span>
         <a class="pop info"
-           tabindex="0"
+
            data-placement="auto"
            data-html="true"
-           data-trigger="focus"
+
            data-toggle="popover"
            data-title="Capacity Demand"
            data-content="<div>
-                            <b>Expected:</b> </br> Expected capacity needed, based on algorithm 'MaxCapReq.'  <br/>
-                            </br><b>Maximum:</b></br> Capacity needed to memorize training data using 'dumb' network where only biases are fitted (all weights are constant). <br/>
-                            </br><b>Overfit:</b></br> Capacity needed to memorize training data as a lookup table (the number of state transitions a lookup table would need).
+            <b>Expected:</b> </br> Expected capacity needed, based on algorithm 'MaxCapReq.'  <br/>
+            </br><b>Maximum:</b></br> Capacity needed to memorize training data using 'dumb' network where only biases are fitted (all weights are constant). <br/>
+            </br><b>Overfit:</b></br> Capacity needed to memorize training data as a lookup table (the number of state transitions a lookup table would need).
 
-                            <br/>
-                            <code>
-                            MaxCapReq(data, labels) <br/>
-                            thresholds ⟵ 0 <br/>
-                            <b>loop over</b> <i>i</i>: table[i] ⟵ (∑ x[i][d], label[i]) <br/>
-                            sortedtable ⟵ sort(table, key = column 0) <br/>
-                            class ⟵ 0 <br/>
-                            <b>loop over</b> <i>i</i>: <b>if</b> not sortedtable[i][1] == class <b>then</b> <br/>
-                            .
-                            .
-                            .
-                            </code>
-                        </div>">
+            <br/><br/>
+            <b>MaxCapReq algorithm: (<a target='_blank' href='https://github.com/fractor/nntailoring/tree/master/capacityreq'>link</a>):</b></br>
+            <pre>
+            <code>
+    data: array of length <i>i</i> containing vectors <i>x</i> with dimentionality <i>d</i>
+    labels: a column containing 0 or 1
+
+    <i>MaxCapReq(data, labels)</i>
+    <i>thresholds</i> ⟵ 0
+    <b>loop over</b> <i>i</i>: <i>table</i>[<i>i</i>] ⟵ (∑<i>x</i>[<i>i</i>][<i>d</i>], label[<i>i</i>])
+    sortedtable ⟵ <i>sort</i>(<i>table</i>, <i>key</i> = <i>column</i> 0)
+    class ⟵ 0
+    <b>loop over</b> <i>i</i>: <b>if</b> not <i>sortedtable</i>[<i>i</i>][1] == <i>class</i> <b>then</b>
+        <i>class</i> ⟵ <i>sortedtable</i>[<i>i</i>][1]
+        <i>thresholds</i> ⟵ <i>thresholds</i> + 1
+    <b>end</b>
+    <i>maxcapreq</i> ⟵ <i>thresholds</i> * <i>d</i> + <i>thresholds</i> + 1
+    <i>expcapreq</i> ⟵ log<sub>2</sub>(<i>thresholds</i> + 1) * <i>d</i>
+    <b>print</b> 'Max: ' + <i>maxcapreq</i> + ' bits'
+    <b>print</b> 'Exp: ' + <i>expcapreq</i> + ' bits'
+
+        </code>
+        </pre>
+        </div>">
         </a>
         </br>
         <label for="sugCapacity">
@@ -255,7 +269,6 @@ limitations under the License.
             Overfit: <b><span class="value">XX</span>&nbsp;bits</b>
         </label>
         </br></br>
-
         <span>Bias Indicator</span>
         <a class="info"
            tabindex="0"
@@ -401,20 +414,19 @@ limitations under the License.
             <span>
                 &nbsp;bits&nbsp;
                 <a class="info"
-                    tabindex="0"
-                    data-placement="auto"
-                    data-html="true"
-                    data-toggle="popover"
-                    data-trigger="focus"
-                    data-title="Memory Equivalent Capacity"
-                    data-content="<div>The machine learners intellectual capacity is memory-equivalent to N bits when the machine learner can represent 2N binary labeling functions of N uniformly random inputs.</br>
+                   tabindex="0"
+                   data-placement="auto"
+                   data-html="true"
+                   data-toggle="popover"
+                   data-trigger="focus"
+                   data-title="Memory Equivalent Capacity"
+                   data-content="<div>The machine learners intellectual capacity is memory-equivalent to N bits when the machine learner can represent 2<sup>N</sup> binary labeling functions of N uniformly random inputs.</br>
 
-                    <ol>
-                    <li> The output of a single neuron is maximally one bit</li>
-                    <li> The memory capacity of a single neuron is the number of parameters in bits</li>
-                    <li> The memory capacity of neurons in a single layer is additive</li>
-                    <li> The memory capacity of neurons in a subsequent layer is limited by the output of the layer it depends on</li>
-                    </ol>
+                    <br/>
+                    1. The output of a single neuron is maximally one bit <br/>
+                    2. The memory capacity of a single neuron is the number of parameters in bits <br/>
+                    3. The memory capacity of neurons in a single layer is additive <br/>
+                    4. The memory capacity of neurons in a subsequent layer is limited by the output of the layer it depends on <br/>
 
                     </div>">
                 </a>
@@ -449,8 +461,7 @@ limitations under the License.
                    data-title="Generalization"
                    data-content="<div>
                                 The model’s ability to handle instances from different classes by a common property. </br></br>
-
-                                <i>*Insert formula here*</i>
+                                This is the number of correctly predicted instances divided by the memory equivalent capacity.
                                 </div>"
                 >
                 </a>
@@ -510,12 +521,14 @@ limitations under the License.
             </a>
             <div class="output-stats test">
                 <span>Test: </span>
-                <div class="value" id="test-accuracy-first"></div>,
+                <div class="value" id="test-accuracy-first"></div>
+                ,
                 <div class="value" id="test-accuracy-second"></div>
             </div>
             <div class="output-stats test">
                 <span>Train: </span>
-                <div class="value" id="train-accuracy-first"></div>,
+                <div class="value" id="train-accuracy-first"></div>
+                ,
                 <div class="value" id="train-accuracy-second"></div>
             </div>
         </div>
@@ -525,25 +538,27 @@ limitations under the License.
 
 </div>
 <div class="l--page">
-<h2>Need a tutorial video?</h2>
-<p>Click <a href="https://www.youtube.com/watch?v=Q-H5GN6r-hQ" target="dio"> here </a> for a Youtube tutorial video.</p>
-<h2>Bring Your Own Data</h2>
+    <h2>Need a tutorial video?</h2>
+    <p>Click <a href="https://www.youtube.com/watch?v=Q-H5GN6r-hQ" target="dio"> here </a> for a Youtube tutorial video.
+    </p>
+    <h2>Bring Your Own Data</h2>
 
-<h2>Credits</h2>
-<p>
-    This was created by <a href="mailto:metal@berkeley.edu">Alfredo Metere</a> and <a
-        href="mailto:fractor@eecs.berkeley.edu">Gerald Friedland</a>. For the theoretical foundations see <A
-        HREF="https://arxiv.org/abs/1708.06019" target="ftop">this article</A>.
-    This is a continuation of Tensorflow Playground which is a continuation of many people’s previous work — most
-    notably Daniel Smilkov, Shan Carter and Andrej Karpathy’s <a
-        href="http://cs.stanford.edu/people/karpathy/convnetjs/demo/classify2d.html">convnet.js demo</a>
-    and Chris Olah’s <a href="http://colah.github.io/posts/2014-03-NN-Manifolds-Topology/">articles</a> about neural
-    networks.
-    Many thanks also to D. Sculley for help with the original idea and to Fernanda Viégas and Martin Wattenberg and the
-    rest of the
-    <a href="https://research.google.com/bigpicture/">Big Picture</a> and <a
-        href="https://research.google.com/teams/brain/">Google Brain</a> teams for feedback and guidance.
-</p>
+    <h2>Credits</h2>
+    <p>
+        This was created by <a href="mailto:metal@berkeley.edu">Alfredo Metere</a> and <a
+            href="mailto:fractor@eecs.berkeley.edu">Gerald Friedland</a>. For the theoretical foundations see <A
+            HREF="https://arxiv.org/abs/1708.06019" target="ftop">this article</A>.
+        This is a continuation of Tensorflow Playground which is a continuation of many people’s previous work — most
+        notably Daniel Smilkov, Shan Carter and Andrej Karpathy’s <a
+            href="http://cs.stanford.edu/people/karpathy/convnetjs/demo/classify2d.html">convnet.js demo</a>
+        and Chris Olah’s <a href="http://colah.github.io/posts/2014-03-NN-Manifolds-Topology/">articles</a> about neural
+        networks.
+        Many thanks also to D. Sculley for help with the original idea and to Fernanda Viégas and Martin Wattenberg and
+        the
+        rest of the
+        <a href="https://research.google.com/bigpicture/">Big Picture</a> and <a
+            href="https://research.google.com/teams/brain/">Google Brain</a> teams for feedback and guidance.
+    </p>
 </div>
 </div>
 
