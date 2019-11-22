@@ -442,7 +442,7 @@ function makeGUI() {
 
 			// Resetting the BYOD thumbnail
 			let canvas: any = document.querySelector(`canvas[data-dataset=byod]`);
-			renderBYODThumbnail(canvas);
+			// renderBYODThumbnail(canvas);
 			reset();
 		}
 
@@ -1423,7 +1423,7 @@ function drawDatasetThumbnails() {
 			let dataGenerator = datasets[dataset];
 
 			if (dataset === "byod") {
-				renderBYODThumbnail(canvas);
+				// renderBYODThumbnail(canvas);
 				continue;
 			}
 			renderThumbnail(canvas, dataGenerator);
