@@ -294,6 +294,16 @@ function numberOfUnique(dataset: Example2D[]) {
 }
 
 function makeGUI() {
+	// Toolboxes
+	$(function () {
+		$("[data-toggle='popover']").popover({
+			container: "body"
+		});
+	});
+	$(".popover-dismiss").popover({
+		trigger: "focus"
+	});
+
 	d3.select("#reset-button").on("click", () => {
 		reset();
 		userHasInteracted();
@@ -1207,8 +1217,8 @@ function updateUI(firstStep = false) {
 		return s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 	}
 
-	function humanReadable(n: number): string {
-		return n.toFixed(4);
+	function humanReadable(n: number, k = 4): string {
+		return n.toFixed(k);
 	}
 
 	function humanReadableInt(n: number): string {
@@ -1230,7 +1240,7 @@ function updateUI(firstStep = false) {
 
 	d3.select("#loss-train").text(humanReadable(bitLossTrain));
 	d3.select("#loss-test").text(humanReadable(bitLossTest));
-	d3.select("#generalization").text(humanReadable(bitGeneralization));
+	d3.select("#generalization").text(humanReadable(bitGeneralization, 3));
 	d3.select("#train-accuracy-first").text(humanReadable(trainClassesAccuracy[0]));
 	d3.select("#train-accuracy-second").text(humanReadable(trainClassesAccuracy[1]));
 	d3.select("#test-accuracy-first").text(humanReadable(testClassesAccuracy[0]));
@@ -1391,7 +1401,6 @@ function renderBYODThumbnail(canvas) {
 	canvas.setAttribute("height", 100);
 	let context = canvas.getContext("2d");
 	const plusSvg = "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><title>add</title><path d=\"M18.984 12.984h-6v6h-1.969v-6h-6v-1.969h6v-6h1.969v6h6v1.969z\"></path></svg>";
-
 	const img = new Image();
 	const svg = new Blob([plusSvg], {type: "image/svg+xml"});
 	const url = URL.createObjectURL(svg);
@@ -1486,6 +1495,7 @@ function generateData(firstTime = false) {
 
 	let generator;
 	let data: Example2D[] = [];
+	// tslint:disable-next-line:indent
 
 	if (state.byod) {
 		data = trainData.concat(testData);
@@ -1564,6 +1574,12 @@ function simulateClick(elem /* Must be the element, not d3 selection */) {
 		null); /* relatedTarget */
 	elem.dispatchEvent(evt);
 }
+
+
+
+
+
+
 
 drawDatasetThumbnails();
 // initTutorial();
