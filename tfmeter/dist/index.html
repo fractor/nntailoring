@@ -81,7 +81,7 @@ limitations under the License.
     <meta name="twitter:image:width" content="560">
     <meta name="twitter:image:height" content="295">
 
-    <meta name="author" content="Alfredo Metere">
+    <meta name="author" content="Alfredo Metere|Henrik Hoeiness|Axel Harstad|Vilde Arntzen">
     <title>An Explainable Neural Network Meter</title>
     <link rel="stylesheet" href="bundle.css" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500|Material+Icons" rel="stylesheet"
@@ -222,10 +222,10 @@ limitations under the License.
         </h4>
         <span>Capacity Demand</span>
         <a class="pop info"
-
+           tabindex="0"
            data-placement="auto"
            data-html="true"
-
+           data-trigger="focus"
            data-toggle="popover"
            data-title="Capacity Demand"
            data-content="<div>
@@ -461,7 +461,9 @@ limitations under the License.
                    data-title="Generalization"
                    data-content="<div>
                                 The model’s ability to handle instances from different classes by a common property. </br></br>
-                                This is the number of correctly predicted instances divided by the memory equivalent capacity.
+
+                                <img src='images/generalization-equation.png' alt='Equation for Generalization' width='300vw'>
+                                </br>
                                 </div>"
                 >
                 </a>
@@ -541,11 +543,15 @@ limitations under the License.
     <h2>Need a tutorial video?</h2>
     <p>Click <a href="https://www.youtube.com/watch?v=Q-H5GN6r-hQ" target="dio"> here </a> for a Youtube tutorial video.
     </p>
-    <h2>Bring Your Own Data</h2>
+    <h2>Further reading</h2>
+    <p>
+        Cheat Sheet: <a href="http://www1.icsi.berkeley.edu/~fractor/fall2019/ewExternalFiles/ML_Cheat_Sheet_0.97.pdf">Machine Learning ExperimentalDesign Cheat Sheet</a><br/>
+        Lectures: <a href="http://www1.icsi.berkeley.edu/~fractor/fall2019/">Experimental Design for Machine Learning on Multimedia Data at UC Berkeley</a>
+    </p>
 
     <h2>Credits</h2>
     <p>
-        This was created by <a href="mailto:metal@berkeley.edu">Alfredo Metere</a> and <a
+        This was created by <a href="mailto:metal@berkeley.edu">Alfredo Metere</a>, <a href="mailto:henrik.hoiness@online.no">Henrik Høiness</a>, <a href="mailto:axel.harstad@gmail.com">Axel Harstad</a> and <a
             href="mailto:fractor@eecs.berkeley.edu">Gerald Friedland</a>. For the theoretical foundations see <A
             HREF="https://arxiv.org/abs/1708.06019" target="ftop">this article</A>.
         This is a continuation of Tensorflow Playground which is a continuation of many people’s previous work — most
