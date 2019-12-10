@@ -843,6 +843,8 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean, cont
 						"border-width": "0px"
 					});
 					createLink(markedNode, node);
+					markedNode = null;
+					markedDiv = null;
 				}
 			}
 		})
