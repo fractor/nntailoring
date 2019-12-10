@@ -27,6 +27,7 @@ export class Node {
 	outputs: Link[] = [];
 	totalInput: number;
 	output: number;
+	layer: number;
 
 	trueLearningRate = 0;
 	/** Error derivative with respect to this node's output. */
@@ -239,8 +240,8 @@ export function buildNetwork(
 			} else {
 				id++;
 			}
-			let node = new Node(nodeId,
-				isOutputLayer ? outputActivation : activation, initZero);
+			let node = new Node(nodeId, isOutputLayer ? outputActivation : activation, initZero);
+			node.layer = layerIdx;
 			currentLayer.push(node);
 			if (layerIdx >= 1) {
 				// Add links from nodes in the previous layer to this node.

@@ -180,6 +180,7 @@ export class State {
 	dataset: dataset.DataGenerator = dataset.classifyTwoGaussData;
 	regDataset: dataset.DataGenerator = dataset.regressPlane;
 	seed: string;
+	shiftDown: boolean;
 
 	/**
 	 * Deserializes the state from the url hash.
@@ -252,6 +253,7 @@ export class State {
 			state.seed = Math.random().toFixed(5);
 		}
 		Math.seedrandom(state.seed);
+		state.shiftDown = false;
 		return state;
 	}
 

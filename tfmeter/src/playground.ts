@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Link} from "./nn";
+
 declare var $: any;
 
 import * as nn from "./nn";
@@ -216,6 +218,9 @@ let player = new Player();
 let lineChart = new AppendingLineChart(d3.select("#linechart"),
 	["#777", "black"]);
 
+let markedNode: nn.Node = null;
+let markedDiv = null;
+
 function getReqCapacity(points: Example2D[]): number[] {
 
 	let rounding = REQ_CAP_ROUNDING;
@@ -279,7 +284,7 @@ function getReqCapacity(points: Example2D[]): number[] {
 	return retval;
 }
 
-// ~ let myData: Example2D[] = [];
+
 function numberOfUnique(dataset: Example2D[]) {
 	let count: number = 0;
 	let uniqueDict: { [key: string]: number } = {};
@@ -293,6 +298,23 @@ function numberOfUnique(dataset: Example2D[]) {
 	return count;
 }
 
+/**
+ * Scaling the points in {points} given a range {range}
+ */
+function minMaxScalePoints(points: Example2D[], range: [number, number]) {
+	let points_x = points.map(p => p.x);
+	let points_y = points.map(p => p.y);
+	let x_min = Math.min(...points_x);
+	let x_max = Math.max(...points_x);
+	let y_min = Math.min(...points_y);
+	let y_max = Math.max(...points_y);
+	points.forEach(p => {
+		p.x = ((p.x - x_min) / (x_max - x_min)) * (range[1] - range[0]) + range[0];
+		p.y = ((p.y - y_min) / (y_max - y_min)) * (range[1] - range[0]) + range[0];
+	});
+	return points;
+}
+
 function makeGUI() {
 	// Toolboxes
 	$(function () {
@@ -303,6 +325,24 @@ function makeGUI() {
 	$(".popover-dismiss").popover({
 		trigger: "focus"
 	});
+
+	// Adding links between nodes
+	window.addEventListener("keyup", function (event) {
+		if (event.keyCode == 16) {
+			state.shiftDown = false;
+			markedDiv.style({
+				"border-width": "0px"
+			});
+			markedDiv = null;
+			markedNode = null;
+		}
+	});
+	window.addEventListener("keydown", function (event) {
+		if (event.keyCode == 16) {
+			state.shiftDown = true;
+		}
+	});
+
 
 	d3.select("#reset-button").on("click", () => {
 		reset();
@@ -373,8 +413,8 @@ function makeGUI() {
 						let y = parseFloat(ss[1]);
 						let label = parseInt(ss[2]);
 						points.push({x, y, label});
-						// ~ console.log(points[i].x+","+points[i].y+","+points[i].label);
 					}
+					points = minMaxScalePoints(points, [-6, 6]);
 					shuffle(points);
 					// Split into train and test data.
 					let splitIndex = Math.floor(points.length * state.percTrainData / 100);
@@ -442,7 +482,7 @@ function makeGUI() {
 
 			// Resetting the BYOD thumbnail
 			let canvas: any = document.querySelector(`canvas[data-dataset=byod]`);
-			// renderBYODThumbnail(canvas);
+			renderBYODThumbnail(canvas);
 			reset();
 		}
 
@@ -684,6 +724,24 @@ function updateWeightsUI(network: nn.Node[][], container: d3.Selection<any>) {
 	}
 }
 
+/**
+ * Creating link between two nodes.
+ * @param startNode: Starting node of link
+ * @param endNode: End node of link
+ */
+function createLink(startNode: nn.Node, endNode: nn.Node) {
+	if (startNode.layer >= endNode.layer) {
+		return;
+	}
+	console.log(startNode, endNode);
+	let link = new Link(startNode, endNode, state.regularization, state.initZero);
+	startNode.outputs.push(link);
+	endNode.inputLinks.push(link);
+	drawNetwork(network);
+	updateUI();
+	console.log(state.networkShape);
+}
+
 function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean, container: d3.Selection<any>, node?: nn.Node) {
 	let x = cx - RECT_SIZE / 2;
 	let y = cy - RECT_SIZE / 2;
@@ -769,6 +827,25 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean, cont
 				left: `${x + 3}px`,
 				top: `${y + 3}px`
 			})
+		.on("click", function () {
+			if (state.shiftDown) {
+				if (markedNode == null) {
+					div.style({
+						"border-style": "solid",
+						"border-radius": "5px",
+						"border-color": "red",
+						"border-width": "2px"
+					});
+					markedNode = node;
+					markedDiv = div;
+				} else {
+					markedDiv.style({
+						"border-width": "0px"
+					});
+					createLink(markedNode, node);
+				}
+			}
+		})
 		.on("mouseenter", function () {
 			selectedNodeId = nodeId;
 			div.classed("hovered", true);
@@ -785,9 +862,23 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean, cont
 		});
 	if (isInput) {
 		div.on("click", function () {
-			state[nodeId] = !state[nodeId];
-			parametersChanged = true;
-			reset();
+			if (!state.shiftDown) {
+				state[nodeId] = !state[nodeId];
+				parametersChanged = true;
+				reset();
+			} else {
+				if (markedNode == null) {
+					div.style({
+						"border-style": "solid",
+						"border-radius": "5px",
+						"border-color": "red",
+						"border-width": "2px"
+					});
+					console.log(node);
+					markedNode = node;
+					markedDiv = div;
+				}
+			}
 		});
 		div.style("cursor", "pointer");
 	}
@@ -838,9 +929,10 @@ function drawNetwork(network: nn.Node[][]): void {
 	let nodeIds = Object.keys(INPUTS);
 	let maxY = nodeIndexScale(nodeIds.length);
 	nodeIds.forEach((nodeId, i) => {
+		let node = network[0][i];
 		let cy = nodeIndexScale(i) + RECT_SIZE / 2;
 		node2coord[nodeId] = {cx, cy};
-		drawNode(cx, cy, nodeId, true, container);
+		drawNode(cx, cy, nodeId, true, container, node);
 	});
 
 	// Draw the intermediate layers.
@@ -1046,12 +1138,35 @@ function drawLink(
 	container.append("path")
 		.attr("d", diagonal(datum, 0))
 		.attr("class", "link-hover")
+		.on("dblclick", function () {
+			deactivateActivateLink(input, d3.mouse(this));
+		})
 		.on("mouseenter", function () {
 			updateHoverCard(HoverType.WEIGHT, input, d3.mouse(this));
-		}).on("mouseleave", function () {
-		updateHoverCard(null);
-	});
+		})
+		.on("mouseleave", function () {
+			updateHoverCard(null);
+		});
 	return line;
+}
+
+/**
+ * Given a link, reactivates it if dead or sets it's weight to zero and kills it
+ * @param link: A link in a neural network
+ * @param coordinates: Mouse coordinates
+ */
+function deactivateActivateLink(link: nn.Link, coordinates?: [number, number]) {
+	if (link.isDead) {
+		link.weight = 1;
+		link.isDead = false;
+		updateHoverCard(HoverType.WEIGHT, link, coordinates);
+		updateUI();
+	} else {
+		link.weight = 0;
+		link.isDead = true;
+		updateHoverCard(HoverType.WEIGHT, link, coordinates);
+		updateUI();
+	}
 }
 
 /**
@@ -1423,7 +1538,7 @@ function drawDatasetThumbnails() {
 			let dataGenerator = datasets[dataset];
 
 			if (dataset === "byod") {
-				// renderBYODThumbnail(canvas);
+				renderBYODThumbnail(canvas);
 				continue;
 			}
 			renderThumbnail(canvas, dataGenerator);
@@ -1574,11 +1689,6 @@ function simulateClick(elem /* Must be the element, not d3 selection */) {
 		null); /* relatedTarget */
 	elem.dispatchEvent(evt);
 }
-
-
-
-
-
 
 
 drawDatasetThumbnails();

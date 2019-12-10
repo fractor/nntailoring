@@ -306,11 +306,10 @@ limitations under the License.
                     <canvas class="data-thumbnail" data-dataset="spiral"></canvas>
                 </div>
 
-                <!--
+
                 <div class="dataset" title="Bring Your Own Data">
-                    <canvas class="data-thumbnail" data-dataset="byod">
+                    <canvas class="data-thumbnail" data-dataset="byod"></canvas>
                 </div>
-                -->
                 <div class="dataset" title="Plane">
                     <canvas class="data-thumbnail" data-regDataset="reg-plane"></canvas>
                 </div>
@@ -362,6 +361,7 @@ limitations under the License.
             </svg>
             <!-- Hover card -->
             <div id="hovercard">
+                <div style="font-size:10px">Double-click to remove or add link.</div>
                 <div style="font-size:10px">Click anywhere to edit.</div>
                 <div><span class="type">Weight/Bias</span> is <span class="value">0.2</span><span><input type="number"/></span>.
                 </div>
@@ -377,7 +377,7 @@ limitations under the License.
                     <path d="M12,30C5,20 2,15 12,0" marker-end="url(#arrow)">
                 </svg>
                 <div class="label">
-                    This is the output from one <b>neuron</b>. Hover to see it larger.
+                    Hold shift and click on two nodes to <b>create a link</b> between them.
                 </div>
             </div>
             <div class="callout weights">
