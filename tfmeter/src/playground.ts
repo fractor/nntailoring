@@ -1122,12 +1122,24 @@ function getLearningRate(network: nn.Node[][]): number {
 function getTotalCapacity(network: nn.Node[][]): number {
 	let totalCapacity = 0;
 	for (let layerIdx = 1; layerIdx < network.length; layerIdx++) {
+		let curLayerCapacity = 0;
 		let currentLayer = network[layerIdx];
-		totalCapacity += currentLayer.length;
-		for (let i = 0; i < currentLayer.length; i++) {
-			let node = currentLayer[i];
-			totalCapacity += node.inputLinks.length;
+		if (1 === layerIdx)
+			for (let i = 0; i < currentLayer.length; i++) {
+				let node = currentLayer[i];
+				curLayerCapacity += node.inputLinks.length + 1;
+			}
+		else {
+			let minLayer = network[layerIdx - 1].length;
+			for (let i = 1; i < layerIdx - 1; i++) {
+				if (network[i].length < minLayer) {
+					minLayer = network[i].length;
+				}
+			}
+
+			curLayerCapacity += minLayer;
 		}
+		totalCapacity += curLayerCapacity;
 	}
 	return totalCapacity;
 }
