@@ -330,9 +330,11 @@ function makeGUI() {
 	window.addEventListener("keyup", function (event) {
 		if (event.keyCode == 16) {
 			state.shiftDown = false;
-			markedDiv.style({
-				"border-width": "0px"
-			});
+			if (markedDiv != null) {
+				markedDiv.style({
+					"border-width": "0px"
+				});
+			}
 			markedDiv = null;
 			markedNode = null;
 		}
@@ -733,13 +735,12 @@ function createLink(startNode: nn.Node, endNode: nn.Node) {
 	if (startNode.layer >= endNode.layer) {
 		return;
 	}
-	console.log(startNode, endNode);
+	// TODO: FIX CAPACITY WHEN ADDING AND REMOVING LINKS
 	let link = new Link(startNode, endNode, state.regularization, state.initZero);
 	startNode.outputs.push(link);
 	endNode.inputLinks.push(link);
 	drawNetwork(network);
 	updateUI();
-	console.log(state.networkShape);
 }
 
 function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean, container: d3.Selection<any>, node?: nn.Node) {
@@ -876,7 +877,7 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean, cont
 						"border-color": "red",
 						"border-width": "2px"
 					});
-					console.log(node);
+					console.log(node, div);
 					markedNode = node;
 					markedDiv = div;
 				}
@@ -930,8 +931,13 @@ function drawNetwork(network: nn.Node[][]): void {
 	let cx = RECT_SIZE / 2 + 50;
 	let nodeIds = Object.keys(INPUTS);
 	let maxY = nodeIndexScale(nodeIds.length);
+	let activeNodeIndices = network[0].reduce((obj, node, i) => {
+		obj[node.id] = i;
+		return obj;
+	}, {});
 	nodeIds.forEach((nodeId, i) => {
-		let node = network[0][i];
+		let nodeIdx = activeNodeIndices[nodeId];
+		let node = network[0][nodeIdx];
 		let cy = nodeIndexScale(i) + RECT_SIZE / 2;
 		node2coord[nodeId] = {cx, cy};
 		drawNode(cx, cy, nodeId, true, container, node);
@@ -1167,6 +1173,7 @@ function deactivateActivateLink(link: nn.Link, coordinates?: [number, number]) {
 		link.weight = 0;
 		link.isDead = true;
 		updateHoverCard(HoverType.WEIGHT, link, coordinates);
+		totalCapacity = getTotalCapacity(network);
 		updateUI();
 	}
 }
@@ -1365,6 +1372,7 @@ function updateUI(firstStep = false) {
 	let bitLossTrain = lossTrain;
 	let bitTrueLearningRate = signalOf(trueLearningRate) * log2;
 	let bitGeneralization = generalization;
+	totalCapacity = getTotalCapacity(network);
 
 
 	d3.select("#loss-train").text(humanReadable(bitLossTrain));
