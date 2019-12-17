@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Node} from "./nn";
+
 declare var $: any;
 
 import * as nn from "./nn";
@@ -224,14 +226,18 @@ function getReqCapacity(points: Example2D[]): number[] {
 	let numCols: number = 2;
 	let result: number = 0;
 	let retval: number[] = [];
-
 	let class1 = -666;
 	let numclass1: number = 0;
 	for (let i = 0; i < numRows; i++) {
-		let x: number = points[i].x / 1.0;
-		let y: number = points[i].y / 1.0;
-		let result: number = (x + y) / 1.0;
-		// ~ console.log("x: " + x + "\ty: " + y + "\tresult[" + i + "]: " + result);
+		let result = 0; // y, xSquared, ySquared, xTimesY, sinX, sinY,
+		if (network && network[0].length) {
+			network[0].forEach((node: Node) => {
+				result += INPUTS[node.id].f(points[i].x, points[i].y);
+			});
+		}
+		else {
+			return [Infinity, Infinity];
+		}
 		if (rounding != -1) {
 			result = mtrunc(result * Math.pow(10, rounding)) / Math.pow(10, rounding);
 		}
@@ -1248,8 +1254,11 @@ function updateUI(firstStep = false) {
 	let bitLossTrain = lossTrain;
 	let bitTrueLearningRate = signalOf(trueLearningRate) * log2;
 	let bitGeneralization = generalization;
+	state.sugCapacity = getReqCapacity(trainData)[0];
+	state.maxCapacity = getReqCapacity(trainData)[1];
 
-
+	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
+	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
 	d3.select("#loss-train").text(humanReadable(bitLossTrain));
 	d3.select("#loss-test").text(humanReadable(bitLossTest));
 	d3.select("#generalization").text(humanReadable(bitGeneralization, 3));
@@ -1583,14 +1592,10 @@ function simulateClick(elem /* Must be the element, not d3 selection */) {
 		false, /* shiftKey */
 		false, /* metaKey */
 		0, /* button */
-		null); /* relatedTarget */
+		null);
+	/* relatedTarget */
 	elem.dispatchEvent(evt);
 }
-
-
-
-
-
 
 
 drawDatasetThumbnails();
