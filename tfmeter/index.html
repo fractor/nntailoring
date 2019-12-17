@@ -230,7 +230,6 @@ limitations under the License.
            data-title="Capacity Demand"
            data-content="<div>
             <b>Expected:</b> </br> Expected capacity needed, based on algorithm 'MaxCapReq.'  <br/>
-            </br><b>Maximum:</b></br> Capacity needed to memorize training data using 'dumb' network where only biases are fitted (all weights are constant). <br/>
             </br><b>Overfit:</b></br> Capacity needed to memorize training data as a lookup table (the number of state transitions a lookup table would need).
 
             <br/><br/>
@@ -261,9 +260,6 @@ limitations under the License.
         </br>
         <label for="sugCapacity">
             Expected: <b><span class="value">XX</span>&nbsp;bits</b>
-        </label></br>
-        <label for="maxCapacity">
-            Maximum: <b><span class="value">XX</span>&nbsp;bits</b>
         </label></br>
         <label for="dataOverfit">
             Overfit: <b><span class="value">XX</span>&nbsp;bits</b>
@@ -429,7 +425,7 @@ limitations under the License.
                     <br/>
                     1. The output of a single neuron is maximally one bit <br/>
                     2. The memory capacity of a single neuron is the number of parameters in bits <br/>
-                    3. The memory capacity of neurons in a single layer is additive <br/>
+                    3. The memory capacity of neurons is additive <br/>
                     4. The memory capacity of neurons in a subsequent layer is limited by the output of the layer it depends on <br/>
 
                     </div>">
