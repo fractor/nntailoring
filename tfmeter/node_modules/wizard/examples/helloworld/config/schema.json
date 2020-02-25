@@ -1,0 +1,22 @@
+{
+    "_resource": "app",
+    "properties": {
+        "name": {
+            "description": "the name of your awesome new node app",
+            "type": "string",
+            "default": "my awesome app",
+            "required": true
+        },
+        "port": {
+            "description": "the port your node app should listen on",
+            "type": "number",
+            "default": 8080
+        },
+        "host": {
+            "description": "the host your node app should listen on",
+            "type": "any",
+            "default": "localhost"
+        }
+    }
+
+}
