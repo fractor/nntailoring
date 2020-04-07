@@ -740,11 +740,12 @@ function createLink(startNode: nn.Node, endNode: nn.Node) {
 	if (startNode.layer >= endNode.layer) {
 		return;
 	}
-	// TODO: FIX CAPACITY WHEN ADDING AND REMOVING LINKS
+
 	let link = new Link(startNode, endNode, state.regularization, state.initZero);
 	startNode.outputs.push(link);
 	endNode.inputLinks.push(link);
 	drawNetwork(network);
+	totalCapacity = getTotalCapacity(network);
 	updateUI();
 }
 
@@ -1234,6 +1235,75 @@ function updateDecisionBoundary(network: nn.Node[][], firstTime: boolean) {
 	}
 }
 
+function anyAliveOutputLinks(node: Node): boolean {
+	let link: Link;
+	for (link of node.outputs) {
+		if (!link.isDead) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function anyAliveInputLinks(node: Node): boolean {
+	let link: Link;
+	for (link of node.inputLinks) {
+		if (!link.isDead) {
+			return true;
+		}
+	}
+	return false;
+}
+
+
+function getUniqueInNodes(layer: nn.Node[], isOutputNode: boolean = false): nn.Node[] {
+	let uniqueInNodes: nn.Node[] = [];
+	for (let node of layer) {
+		if (anyAliveOutputLinks(node) || isOutputNode) { // Node is alive and produces output
+			let inLinks = node.inputLinks;
+			let link: Link;
+			for (link of inLinks) {
+				if (!link.isDead && (link.source.layer === 0 || anyAliveInputLinks(link.source)) ) {
+					let inNode: Node = link.source;
+					if (uniqueInNodes.indexOf(inNode) === -1) {
+						uniqueInNodes.push(inNode);
+					}
+				}
+			}
+		}
+	}
+	return uniqueInNodes;
+}
+
+function getTotalCapacity(network: nn.Node[][]): number {
+	let totalCapacity = 0;
+	for (let layerIdx = 1; layerIdx < network.length; layerIdx++) {
+		let curLayerCapacity = 0;
+		let currentLayer = network[layerIdx];
+		if (1 === layerIdx)
+			for (let i = 0; i < currentLayer.length; i++) {
+				let node: Node = currentLayer[i];
+				if (anyAliveOutputLinks(node) || layerIdx == network.length - 1) { // Node is alive and produces output
+					curLayerCapacity += getUniqueInNodes([node], layerIdx === network.length - 1).length + 1;
+				}
+			}
+		else {
+			let uniqueInNodes: nn.Node[] = getUniqueInNodes(currentLayer, layerIdx === network.length - 1);
+			let minLayer = uniqueInNodes.length;
+			for (let i = 1; i < layerIdx; i++) {
+				let uniqueInNodes: nn.Node[] = getUniqueInNodes(network[i], false);
+				let tempMinLayer = uniqueInNodes.length;
+				if (tempMinLayer < minLayer) {
+					minLayer = tempMinLayer;
+				}
+			}
+			curLayerCapacity += minLayer;
+		}
+		totalCapacity += curLayerCapacity;
+	}
+	return totalCapacity;
+}
+
 function getLearningRate(network: nn.Node[][]): number {
 	let trueLearningRate = 0;
 
@@ -1246,31 +1316,6 @@ function getLearningRate(network: nn.Node[][]): number {
 		}
 	}
 	return trueLearningRate;
-}
-
-function getTotalCapacity(network: nn.Node[][]): number {
-	let totalCapacity = 0;
-	for (let layerIdx = 1; layerIdx < network.length; layerIdx++) {
-		let curLayerCapacity = 0;
-		let currentLayer = network[layerIdx];
-		if (1 === layerIdx)
-			for (let i = 0; i < currentLayer.length; i++) {
-				let node = currentLayer[i];
-				curLayerCapacity += node.inputLinks.length + 1;
-			}
-		else {
-			let minLayer = network[layerIdx - 1].length;
-			for (let i = 1; i < layerIdx - 1; i++) {
-				if (network[i].length < minLayer) {
-					minLayer = network[i].length;
-				}
-			}
-
-			curLayerCapacity += minLayer;
-		}
-		totalCapacity += curLayerCapacity;
-	}
-	return totalCapacity;
 }
 
 function getLoss(network: nn.Node[][], dataPoints: Example2D[]): number {
@@ -1368,6 +1413,10 @@ function updateUI(firstStep = false) {
 
 	// Update true learning rate loss and iteration number.
 	// These are all bit rates, hence they are channel signals
+	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
+	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
+	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications) / totalCapacity;
+
 	let bitLossTest = lossTest;
 	let bitLossTrain = lossTrain;
 	let bitGeneralization = generalization;
@@ -1428,13 +1477,8 @@ function oneStep(): void {
 	lossTrain = getLoss(network, trainData);
 	lossTest = getLoss(network, testData);
 
-	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
-	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
-	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications) / totalCapacity;
-
 	trainClassesAccuracy = getAccuracyForEachClass(network, trainData);
 	testClassesAccuracy = getAccuracyForEachClass(network, testData);
-
 
 	updateUI();
 }
