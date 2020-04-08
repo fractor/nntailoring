@@ -238,8 +238,7 @@ function getReqCapacity(points: Example2D[]): number[] {
 			network[0].forEach((node: Node) => {
 				result += INPUTS[node.id].f(points[i].x, points[i].y);
 			});
-		}
-		else {
+		} else {
 			return [Infinity, Infinity];
 		}
 		if (rounding != -1) {
@@ -737,11 +736,12 @@ function updateWeightsUI(network: nn.Node[][], container: d3.Selection<any>) {
  * @param endNode: End node of link
  */
 function createLink(startNode: nn.Node, endNode: nn.Node) {
-	if (startNode.layer >= endNode.layer) {
+	if (startNode.layer >= endNode.layer - 1) {
 		return;
 	}
 
 	let link = new Link(startNode, endNode, state.regularization, state.initZero);
+	link.isResidual = true;
 	startNode.outputs.push(link);
 	endNode.inputLinks.push(link);
 	drawNetwork(network);
@@ -1238,7 +1238,7 @@ function updateDecisionBoundary(network: nn.Node[][], firstTime: boolean) {
 function anyAliveOutputLinks(node: Node): boolean {
 	let link: Link;
 	for (link of node.outputs) {
-		if (!link.isDead) {
+		if (!link.isDead && !link.isResidual) {
 			return true;
 		}
 	}
@@ -1248,7 +1248,7 @@ function anyAliveOutputLinks(node: Node): boolean {
 function anyAliveInputLinks(node: Node): boolean {
 	let link: Link;
 	for (link of node.inputLinks) {
-		if (!link.isDead) {
+		if (!link.isDead && !link.isResidual) {
 			return true;
 		}
 	}
@@ -1256,14 +1256,14 @@ function anyAliveInputLinks(node: Node): boolean {
 }
 
 
-function getUniqueInNodes(layer: nn.Node[], isOutputNode: boolean = false): nn.Node[] {
+function getUniqueInNodes(layer: nn.Node[], isOutputNode: boolean = false): nn.Node[] {
 	let uniqueInNodes: nn.Node[] = [];
 	for (let node of layer) {
-		if (anyAliveOutputLinks(node) || isOutputNode) { // Node is alive and produces output
+		if (anyAliveOutputLinks(node) || isOutputNode) { // Node is alive and produces output
 			let inLinks = node.inputLinks;
 			let link: Link;
-			for (link of inLinks) {
-				if (!link.isDead && (link.source.layer === 0 || anyAliveInputLinks(link.source)) ) {
+			for (link of inLinks) {
+				if (!link.isResidual && !link.isDead && (link.source.layer === 0 || anyAliveInputLinks(link.source))) {
 					let inNode: Node = link.source;
 					if (uniqueInNodes.indexOf(inNode) === -1) {
 						uniqueInNodes.push(inNode);
@@ -1275,21 +1275,74 @@ function getUniqueInNodes(layer: nn.Node[], isOutputNode: boolean = false): nn.N
 	return uniqueInNodes;
 }
 
+function isInArray(candidate, array) {
+	for (let e of array) {
+		if (e[0] == candidate[0] && e[1] == candidate[1]) {
+			return true;
+		}
+	}
+	return false;
+}
+
 function getTotalCapacity(network: nn.Node[][]): number {
-	let totalCapacity = 0;
+	let totalCapacity: number = 0;
+	let [propogatedInformation, aliveNodes] = getPropogatedInformation(network);
+	let firstLayer = network[1];
+	for (let i = 0; i < firstLayer.length; i++) {
+		let node: Node = firstLayer[i];
+		if (anyAliveOutputLinks(node) || 1 == network.length - 1) { // Node is alive and produces output
+			totalCapacity += getUniqueInNodes([node], 1 === network.length - 1).length + 1;
+		}
+	}
+	let usedResidualLayers = [];
+	for (let layerIdx = 0; layerIdx < network.length; layerIdx++) {
+		for (let node of network[layerIdx]) {
+			let outputLinks: Link[] = node.outputs;
+			const residualLinks: Link[] = outputLinks.filter(function (link) {
+				return link.isResidual && !link.isDead;
+			});
+			residualLinks.sort((a, b) => a.dest.layer - b.dest.layer);
+			for (let link of residualLinks) {
+				if (isInArray([link.source, link.dest.layer], usedResidualLayers)) {
+					continue;
+				}
+				let destIdx = link.dest.layer - 1;
+				propogatedInformation[destIdx] += 1;
+				for (let j = destIdx + 1; j < propogatedInformation.length; j++) {
+					console.log(j, aliveNodes[j], propogatedInformation[j]);
+					if (aliveNodes[j] > propogatedInformation[j]) {
+						propogatedInformation[j] += 1;
+					} else {
+						break;
+					}
+				}
+				usedResidualLayers.push([link.source, link.dest.layer]);
+			}
+		}
+	}
+	totalCapacity += propogatedInformation.slice(1).reduce((a, b) => a + b, 0);
+	return totalCapacity;
+}
+
+function getPropogatedInformation(network: nn.Node[][]): number[][] {
+	let propogatedInformation = [];
+	let aliveNodes = [];
 	for (let layerIdx = 1; layerIdx < network.length; layerIdx++) {
 		let curLayerCapacity = 0;
 		let currentLayer = network[layerIdx];
-		if (1 === layerIdx)
+		if (1 === layerIdx) {
 			for (let i = 0; i < currentLayer.length; i++) {
 				let node: Node = currentLayer[i];
-				if (anyAliveOutputLinks(node) || layerIdx == network.length - 1) { // Node is alive and produces output
-					curLayerCapacity += getUniqueInNodes([node], layerIdx === network.length - 1).length + 1;
+				if (anyAliveOutputLinks(node) || layerIdx == network.length - 1) { // Node is alive and produces output
+					curLayerCapacity += 1;
 				}
 			}
-		else {
+			aliveNodes.push(curLayerCapacity);
+			propogatedInformation.push(curLayerCapacity);
+		} else {
 			let uniqueInNodes: nn.Node[] = getUniqueInNodes(currentLayer, layerIdx === network.length - 1);
 			let minLayer = uniqueInNodes.length;
+			aliveNodes.push(minLayer);
 			for (let i = 1; i < layerIdx; i++) {
 				let uniqueInNodes: nn.Node[] = getUniqueInNodes(network[i], false);
 				let tempMinLayer = uniqueInNodes.length;
@@ -1298,11 +1351,12 @@ function getTotalCapacity(network: nn.Node[][]): number {
 				}
 			}
 			curLayerCapacity += minLayer;
+			propogatedInformation.push(curLayerCapacity);
 		}
-		totalCapacity += curLayerCapacity;
 	}
-	return totalCapacity;
+	return [propogatedInformation, aliveNodes];
 }
+
 
 function getLearningRate(network: nn.Node[][]): number {
 	let trueLearningRate = 0;

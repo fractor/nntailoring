@@ -184,6 +184,7 @@ export class Link {
 	regularization: RegularizationFunction;
 
 	trueLearningRate = 0;
+	isResidual: boolean = false;
 
 	/**
 	 * Constructs a link in the neural network initialized with random weight.
