@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Node} from "./nn";
+import {Link, Node} from "./nn";
 
 declare var $: any;
 
@@ -218,6 +218,9 @@ let player = new Player();
 let lineChart = new AppendingLineChart(d3.select("#linechart"),
 	["#777", "black"]);
 
+let markedNode: nn.Node = null;
+let markedDiv = null;
+
 function getReqCapacity(points: Example2D[]): number[] {
 
 	let rounding = REQ_CAP_ROUNDING;
@@ -234,8 +237,8 @@ function getReqCapacity(points: Example2D[]): number[] {
 			network[0].forEach((node: Node) => {
 				result += INPUTS[node.id].f(points[i].x, points[i].y);
 			});
-		}
-		else {
+
+		} else {
 			return [Infinity, Infinity];
 		}
 		if (rounding != -1) {
@@ -285,7 +288,7 @@ function getReqCapacity(points: Example2D[]): number[] {
 	return retval;
 }
 
-// ~ let myData: Example2D[] = [];
+
 function numberOfUnique(dataset: Example2D[]) {
 	let count: number = 0;
 	let uniqueDict: { [key: string]: number } = {};
@@ -299,6 +302,23 @@ function numberOfUnique(dataset: Example2D[]) {
 	return count;
 }
 
+/**
+ * Scaling the points in {points} given a range {range}
+ */
+function minMaxScalePoints(points: Example2D[], range: [number, number]) {
+	let points_x = points.map(p => p.x);
+	let points_y = points.map(p => p.y);
+	let x_min = Math.min(...points_x);
+	let x_max = Math.max(...points_x);
+	let y_min = Math.min(...points_y);
+	let y_max = Math.max(...points_y);
+	points.forEach(p => {
+		p.x = ((p.x - x_min) / (x_max - x_min)) * (range[1] - range[0]) + range[0];
+		p.y = ((p.y - y_min) / (y_max - y_min)) * (range[1] - range[0]) + range[0];
+	});
+	return points;
+}
+
 function makeGUI() {
 	// Toolboxes
 	$(function () {
@@ -309,6 +329,26 @@ function makeGUI() {
 	$(".popover-dismiss").popover({
 		trigger: "focus"
 	});
+
+	// Adding links between nodes
+	window.addEventListener("keyup", function (event) {
+		if (event.keyCode == 16) {
+			state.shiftDown = false;
+			if (markedDiv != null) {
+				markedDiv.style({
+					"border-width": "0px"
+				});
+			}
+			markedDiv = null;
+			markedNode = null;
+		}
+	});
+	window.addEventListener("keydown", function (event) {
+		if (event.keyCode == 16) {
+			state.shiftDown = true;
+		}
+	});
+
 
 	d3.select("#reset-button").on("click", () => {
 		reset();
@@ -379,8 +419,8 @@ function makeGUI() {
 						let y = parseFloat(ss[1]);
 						let label = parseInt(ss[2]);
 						points.push({x, y, label});
-						// ~ console.log(points[i].x+","+points[i].y+","+points[i].label);
 					}
+					points = minMaxScalePoints(points, [-6, 6]);
 					shuffle(points);
 					// Split into train and test data.
 					let splitIndex = Math.floor(points.length * state.percTrainData / 100);
@@ -448,7 +488,7 @@ function makeGUI() {
 
 			// Resetting the BYOD thumbnail
 			let canvas: any = document.querySelector(`canvas[data-dataset=byod]`);
-			// renderBYODThumbnail(canvas);
+			renderBYODThumbnail(canvas);
 			reset();
 		}
 
@@ -690,6 +730,25 @@ function updateWeightsUI(network: nn.Node[][], container: d3.Selection<any>) {
 	}
 }
 
+/**
+ * Creating link between two nodes.
+ * @param startNode: Starting node of link
+ * @param endNode: End node of link
+ */
+function createLink(startNode: nn.Node, endNode: nn.Node) {
+	if (startNode.layer >= endNode.layer - 1) {
+		return;
+	}
+
+	let link = new Link(startNode, endNode, state.regularization, state.initZero);
+	link.isResidual = true;
+	startNode.outputs.push(link);
+	endNode.inputLinks.push(link);
+	drawNetwork(network);
+	totalCapacity = getTotalCapacity(network);
+	updateUI();
+}
+
 function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean, container: d3.Selection<any>, node?: nn.Node) {
 	let x = cx - RECT_SIZE / 2;
 	let y = cy - RECT_SIZE / 2;
@@ -775,6 +834,27 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean, cont
 				left: `${x + 3}px`,
 				top: `${y + 3}px`
 			})
+		.on("click", function () {
+			if (state.shiftDown) {
+				if (markedNode == null) {
+					div.style({
+						"border-style": "solid",
+						"border-radius": "5px",
+						"border-color": "red",
+						"border-width": "2px"
+					});
+					markedNode = node;
+					markedDiv = div;
+				} else {
+					markedDiv.style({
+						"border-width": "0px"
+					});
+					createLink(markedNode, node);
+					markedNode = null;
+					markedDiv = null;
+				}
+			}
+		})
 		.on("mouseenter", function () {
 			selectedNodeId = nodeId;
 			div.classed("hovered", true);
@@ -791,9 +871,23 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean, cont
 		});
 	if (isInput) {
 		div.on("click", function () {
-			state[nodeId] = !state[nodeId];
-			parametersChanged = true;
-			reset();
+			if (!state.shiftDown) {
+				state[nodeId] = !state[nodeId];
+				parametersChanged = true;
+				reset();
+			} else {
+				if (markedNode == null) {
+					div.style({
+						"border-style": "solid",
+						"border-radius": "5px",
+						"border-color": "red",
+						"border-width": "2px"
+					});
+					console.log(node, div);
+					markedNode = node;
+					markedDiv = div;
+				}
+			}
 		});
 		div.style("cursor", "pointer");
 	}
@@ -843,10 +937,16 @@ function drawNetwork(network: nn.Node[][]): void {
 	let cx = RECT_SIZE / 2 + 50;
 	let nodeIds = Object.keys(INPUTS);
 	let maxY = nodeIndexScale(nodeIds.length);
+	let activeNodeIndices = network[0].reduce((obj, node, i) => {
+		obj[node.id] = i;
+		return obj;
+	}, {});
 	nodeIds.forEach((nodeId, i) => {
+		let nodeIdx = activeNodeIndices[nodeId];
+		let node = network[0][nodeIdx];
 		let cy = nodeIndexScale(i) + RECT_SIZE / 2;
 		node2coord[nodeId] = {cx, cy};
-		drawNode(cx, cy, nodeId, true, container);
+		drawNode(cx, cy, nodeId, true, container, node);
 	});
 
 	// Draw the intermediate layers.
@@ -1052,12 +1152,36 @@ function drawLink(
 	container.append("path")
 		.attr("d", diagonal(datum, 0))
 		.attr("class", "link-hover")
+		.on("dblclick", function () {
+			deactivateActivateLink(input, d3.mouse(this));
+		})
 		.on("mouseenter", function () {
 			updateHoverCard(HoverType.WEIGHT, input, d3.mouse(this));
-		}).on("mouseleave", function () {
-		updateHoverCard(null);
-	});
+		})
+		.on("mouseleave", function () {
+			updateHoverCard(null);
+		});
 	return line;
+}
+
+/**
+ * Given a link, reactivates it if dead or sets it's weight to zero and kills it
+ * @param link: A link in a neural network
+ * @param coordinates: Mouse coordinates
+ */
+function deactivateActivateLink(link: nn.Link, coordinates?: [number, number]) {
+	if (link.isDead) {
+		link.weight = 1;
+		link.isDead = false;
+		updateHoverCard(HoverType.WEIGHT, link, coordinates);
+		updateUI();
+	} else {
+		link.weight = 0;
+		link.isDead = true;
+		updateHoverCard(HoverType.WEIGHT, link, coordinates);
+		totalCapacity = getTotalCapacity(network);
+		updateUI();
+	}
 }
 
 /**
@@ -1111,43 +1235,144 @@ function updateDecisionBoundary(network: nn.Node[][], firstTime: boolean) {
 	}
 }
 
+function anyAliveOutputLinks(node: Node): boolean {
+	let link: Link;
+	for (link of node.outputs) {
+		if (!link.isDead && !link.isResidual) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function anyAliveInputLinks(node: Node): boolean {
+	let link: Link;
+	for (link of node.inputLinks) {
+		if (!link.isDead && !link.isResidual) {
+			return true;
+		}
+	}
+	return false;
+}
+
+
+function getUniqueInNodes(layer: nn.Node[], isOutputNode: boolean = false): nn.Node[] {
+	let uniqueInNodes: nn.Node[] = [];
+	for (let node of layer) {
+		if (anyAliveOutputLinks(node) || isOutputNode) { // Node is alive and produces output
+			let inLinks = node.inputLinks;
+			let link: Link;
+			for (link of inLinks) {
+				if (!link.isResidual && !link.isDead && (link.source.layer === 0 || anyAliveInputLinks(link.source))) {
+					let inNode: Node = link.source;
+					if (uniqueInNodes.indexOf(inNode) === -1) {
+						uniqueInNodes.push(inNode);
+					}
+				}
+			}
+		}
+	}
+	return uniqueInNodes;
+}
+
+function isInArray(candidate, array) {
+	for (let e of array) {
+		if (e[0] == candidate[0] && e[1] == candidate[1]) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function getTotalCapacity(network: nn.Node[][]): number {
+	let totalCapacity: number = 0;
+	let [propogatedInformation, aliveNodes] = getPropogatedInformation(network);
+	let firstLayer = network[1];
+	for (let i = 0; i < firstLayer.length; i++) {
+		let node: Node = firstLayer[i];
+		if (anyAliveOutputLinks(node) || 1 == network.length - 1) { // Node is alive and produces output
+			totalCapacity += getUniqueInNodes([node], 1 === network.length - 1).length + 1;
+		}
+	}
+	let usedResidualLayers = [];
+	for (let layerIdx = 0; layerIdx < network.length; layerIdx++) {
+		for (let node of network[layerIdx]) {
+			let outputLinks: Link[] = node.outputs;
+			const residualLinks: Link[] = outputLinks.filter(function (link) {
+				return link.isResidual && !link.isDead;
+			});
+			residualLinks.sort((a, b) => a.dest.layer - b.dest.layer);
+			for (let link of residualLinks) {
+				if (isInArray([link.source, link.dest.layer], usedResidualLayers)) {
+					continue;
+				}
+				let destIdx = link.dest.layer - 1;
+				propogatedInformation[destIdx] += 1;
+				for (let j = destIdx + 1; j < propogatedInformation.length; j++) {
+					console.log(j, aliveNodes[j], propogatedInformation[j]);
+					if (aliveNodes[j] > propogatedInformation[j]) {
+						propogatedInformation[j] += 1;
+					} else {
+						break;
+					}
+				}
+				usedResidualLayers.push([link.source, link.dest.layer]);
+			}
+		}
+	}
+	totalCapacity += propogatedInformation.slice(1).reduce((a, b) => a + b, 0);
+	return totalCapacity;
+}
+
+function getPropogatedInformation(network: nn.Node[][]): number[][] {
+	let propogatedInformation = [];
+	let aliveNodes = [];
+	for (let layerIdx = 1; layerIdx < network.length; layerIdx++) {
+		let curLayerCapacity = 0;
+		let currentLayer = network[layerIdx];
+		if (1 === layerIdx) {
+			for (let i = 0; i < currentLayer.length; i++) {
+				let node: Node = currentLayer[i];
+				if (anyAliveOutputLinks(node) || layerIdx == network.length - 1) { // Node is alive and produces output
+					curLayerCapacity += 1;
+				}
+			}
+			aliveNodes.push(curLayerCapacity);
+			propogatedInformation.push(curLayerCapacity);
+		} else {
+			let uniqueInNodes: nn.Node[] = getUniqueInNodes(currentLayer, layerIdx === network.length - 1);
+			let minLayer = uniqueInNodes.length;
+			aliveNodes.push(minLayer);
+			for (let i = 1; i < layerIdx; i++) {
+				let uniqueInNodes: nn.Node[] = getUniqueInNodes(network[i], false);
+				let tempMinLayer = uniqueInNodes.length;
+				if (tempMinLayer < minLayer) {
+					minLayer = tempMinLayer;
+				}
+			}
+			curLayerCapacity += minLayer;
+			propogatedInformation.push(curLayerCapacity);
+		}
+	}
+	return [propogatedInformation, aliveNodes];
+}
+
+
 function getLearningRate(network: nn.Node[][]): number {
 	let trueLearningRate = 0;
 
 	for (let layerIdx = 1; layerIdx < network.length; layerIdx++) {
+		let curLayerCapacity = 0;
 		let currentLayer = network[layerIdx];
+
 		// Update all the nodes in this layer.
 		for (let i = 0; i < currentLayer.length; i++) {
 			let node = currentLayer[i];
 			trueLearningRate += node.trueLearningRate;
+
 		}
 	}
 	return trueLearningRate;
-}
-
-function getTotalCapacity(network: nn.Node[][]): number {
-	let totalCapacity = 0;
-	for (let layerIdx = 1; layerIdx < network.length; layerIdx++) {
-		let curLayerCapacity = 0;
-		let currentLayer = network[layerIdx];
-		if (1 === layerIdx)
-			for (let i = 0; i < currentLayer.length; i++) {
-				let node = currentLayer[i];
-				curLayerCapacity += node.inputLinks.length + 1;
-			}
-		else {
-			let minLayer = network[layerIdx - 1].length;
-			for (let i = 1; i < layerIdx - 1; i++) {
-				if (network[i].length < minLayer) {
-					minLayer = network[i].length;
-				}
-			}
-
-			curLayerCapacity += minLayer;
-		}
-		totalCapacity += curLayerCapacity;
-	}
-	return totalCapacity;
 }
 
 function getLoss(network: nn.Node[][], dataPoints: Example2D[]): number {
@@ -1243,19 +1468,20 @@ function updateUI(firstStep = false) {
 		return n.toFixed(0);
 	}
 
-	function signalOf(n: number): number {
-		return Math.log(1 + Math.abs(n));
-	}
-
 	// Update true learning rate loss and iteration number.
 	// These are all bit rates, hence they are channel signals
-	let log2 = 1.0 / Math.log(2.0);
+	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
+	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
+	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications) / totalCapacity;
+
 	let bitLossTest = lossTest;
 	let bitLossTrain = lossTrain;
-	let bitTrueLearningRate = signalOf(trueLearningRate) * log2;
 	let bitGeneralization = generalization;
+
+	totalCapacity = getTotalCapacity(network);
 	state.sugCapacity = getReqCapacity(trainData)[0];
 	state.maxCapacity = getReqCapacity(trainData)[1];
+
 
 	d3.select("label[for='maxCapacity'] .value").text(state.maxCapacity);
 	d3.select("label[for='sugCapacity'] .value").text(state.sugCapacity);
@@ -1309,13 +1535,8 @@ function oneStep(): void {
 	lossTrain = getLoss(network, trainData);
 	lossTest = getLoss(network, testData);
 
-	let numberOfCorrectTrainClassifications: number = getNumberOfCorrectClassifications(network, trainData);
-	let numberOfCorrectTestClassifications: number = getNumberOfCorrectClassifications(network, testData);
-	generalization = (numberOfCorrectTrainClassifications + numberOfCorrectTestClassifications) / totalCapacity;
-
 	trainClassesAccuracy = getAccuracyForEachClass(network, trainData);
 	testClassesAccuracy = getAccuracyForEachClass(network, testData);
-
 
 	updateUI();
 }
@@ -1444,7 +1665,7 @@ function drawDatasetThumbnails() {
 			let dataGenerator = datasets[dataset];
 
 			if (dataset === "byod") {
-				// renderBYODThumbnail(canvas);
+				renderBYODThumbnail(canvas);
 				continue;
 			}
 			renderThumbnail(canvas, dataGenerator);

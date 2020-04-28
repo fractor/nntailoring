@@ -371,7 +371,7 @@ header h1 .optional {
     cursor: default;
     border-radius: 5px;
     left: 240px;
-    width: 150px;
+    width: 170px;
     top: -20px;
 }
 
@@ -592,6 +592,9 @@ g.column rect {
     background: rgba(158, 158, 158, .5);
     color: rgba(0, 0, 0, 0.8);
 }
+
+
+
 
 /* Features column */
 
@@ -1063,4 +1066,42 @@ a.info:before {
 
 .popover{
     max-width: 30%; /* Max Width of the popover (depending on the container!) */
+}
+
+
+/* Feedback button */
+#extra-info .basic-button {
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    margin-top: 10px;
+    margin-bottom: 25px;
+    height: 34px;
+    width: 130px;
+    margin-right: 0;
+    display: block;
+    border: none;
+    color: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 204, 102, .3);
+    border-radius: 3px;
+    padding: 5px;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 500;
+    outline: none;
+    transition: background 0.3s linear;
+    cursor: pointer;
+}
+
+#extra-info .basic-button:hover {
+    background: rgba(0, 204, 102, .6);
+    color: rgba(0, 0, 0, 0.7);
+}
+
+#extra-info .basic-button:focus {
+    background: rgba(0, 204, 102, .7);
+    color: rgba(0, 0, 0, 0.7);
+}
+
+#extra-info .basic-button:active {
+    background: rgba(0, 204, 102, 1);
+    color: rgba(0, 0, 0, 0.7);
 }
