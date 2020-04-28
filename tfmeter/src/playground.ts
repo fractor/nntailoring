@@ -229,7 +229,6 @@ function getReqCapacity(points: Example2D[]): number[] {
 	let numCols: number = 2;
 	let result: number = 0;
 	let retval: number[] = [];
-
 	let class1 = -666;
 	let numclass1: number = 0;
 	for (let i = 0; i < numRows; i++) {
@@ -238,6 +237,7 @@ function getReqCapacity(points: Example2D[]): number[] {
 			network[0].forEach((node: Node) => {
 				result += INPUTS[node.id].f(points[i].x, points[i].y);
 			});
+
 		} else {
 			return [Infinity, Infinity];
 		}
@@ -1362,11 +1362,14 @@ function getLearningRate(network: nn.Node[][]): number {
 	let trueLearningRate = 0;
 
 	for (let layerIdx = 1; layerIdx < network.length; layerIdx++) {
+		let curLayerCapacity = 0;
 		let currentLayer = network[layerIdx];
+
 		// Update all the nodes in this layer.
 		for (let i = 0; i < currentLayer.length; i++) {
 			let node = currentLayer[i];
 			trueLearningRate += node.trueLearningRate;
+
 		}
 	}
 	return trueLearningRate;
@@ -1474,6 +1477,7 @@ function updateUI(firstStep = false) {
 	let bitLossTest = lossTest;
 	let bitLossTrain = lossTrain;
 	let bitGeneralization = generalization;
+
 	totalCapacity = getTotalCapacity(network);
 	state.sugCapacity = getReqCapacity(trainData)[0];
 	state.maxCapacity = getReqCapacity(trainData)[1];
