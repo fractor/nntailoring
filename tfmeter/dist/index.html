@@ -539,7 +539,18 @@ limitations under the License.
     </div>
 
 </div>
-<div class="l--page">
+<div id="extra-info" class="l--page">
+    <h2>Want to give feedback?</h2>
+    <p>This extension is constantly evolving, and we would very much appreciate your feedback. <br>The button below will open up a simple Google Form. Thanks!</p>
+    <button class="basic-button" id="give-feedback-button" title="Give Feedback!" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSehO4xKYd9Z_Z9rooIiRl2_s5YwUh08Mx4lGFwG5JXS48ySgQ/viewform?embedded=true')">
+        Give Feedback!
+    </button>
+    <h2>Bring your own dataset</h2>
+    <p>It is now possible to use your own dataset on the platform. <br>
+       The dataset must be a .csv-file, with three columns <i>x</i>, <i>y</i> and <i>label</i> in {-1, 1}, without any headers. <br>
+       An example dataset of a star can be downloaded <a href="datasets/noised_star_800.csv" download="custom_dataset_star.csv">here</a>.
+    </p>
+    <!-- <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSehO4xKYd9Z_Z9rooIiRl2_s5YwUh08Mx4lGFwG5JXS48ySgQ/viewform?embedded=true" width="640" height="1091" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe> !-->
     <h2>Need a tutorial video?</h2>
     <p>Click <a href="https://www.youtube.com/watch?v=Q-H5GN6r-hQ" target="dio"> here </a> for a Youtube tutorial video.
     </p>
@@ -551,7 +562,7 @@ limitations under the License.
 
     <h2>Credits</h2>
     <p>
-        This was created by <a href="mailto:metal@berkeley.edu">Alfredo Metere</a>, <a href="mailto:henrik.hoiness@online.no">Henrik Høiness</a>, <a href="mailto:axel.harstad@gmail.com">Axel Harstad</a> and <a
+        This was created by <a href="mailto:henrik.hoiness@online.no">Henrik Høiness</a>, <a href="mailto:axel.harstad@gmail.com">Axel Harstad</a>, <a href="mailto:metal@berkeley.edu">Alfredo Metere</a>, and <a
             href="mailto:fractor@eecs.berkeley.edu">Gerald Friedland</a>. For the theoretical foundations see <A
             HREF="https://arxiv.org/abs/1708.06019" target="ftop">this article</A>.
         This is a continuation of Tensorflow Playground which is a continuation of many people’s previous work — most
@@ -559,11 +570,6 @@ limitations under the License.
             href="http://cs.stanford.edu/people/karpathy/convnetjs/demo/classify2d.html">convnet.js demo</a>
         and Chris Olah’s <a href="http://colah.github.io/posts/2014-03-NN-Manifolds-Topology/">articles</a> about neural
         networks.
-        Many thanks also to D. Sculley for help with the original idea and to Fernanda Viégas and Martin Wattenberg and
-        the
-        rest of the
-        <a href="https://research.google.com/bigpicture/">Big Picture</a> and <a
-            href="https://research.google.com/teams/brain/">Google Brain</a> teams for feedback and guidance.
     </p>
 </div>
 </div>
